@@ -1,0 +1,671 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "version": "v1.0.0",
+    "title": "Lend A Friend",
+    "description": "Lend A Friend Mobile app REST API server"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": ""
+    }
+  ],
+  "paths": {
+    "/api/contacts/": {
+      "post": {
+        "operationId": "ContactsController.addContact",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          },
+          "description": "",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Add contact",
+        "tags": [
+          "Contacts"
+        ]
+      }
+    },
+    "/api/contacts/{userId}": {
+      "get": {
+        "operationId": "ContactsController.getContactList",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "pattern": "[^\\/#\\?]+?",
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Get contact list",
+        "tags": [
+          "Contacts"
+        ]
+      }
+    },
+    "/api/contacts/suggestions": {
+      "get": {
+        "operationId": "ContactsController.getSuggestions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Get suggestions",
+        "tags": [
+          "Contacts"
+        ]
+      }
+    },
+    "/api/contacts/invite-friend": {
+      "post": {
+        "operationId": "ContactsController.inviteFriend",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "nickname": {
+                    "type": "string"
+                  },
+                  "otherPersonEmail": {
+                    "type": "string"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Invite friend",
+        "tags": [
+          "Contacts"
+        ]
+      }
+    },
+    "/api/transactions/approve-transaction/{transactionId}": {
+      "put": {
+        "operationId": "TransactionsController.approveTransaction",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "pattern": "[^\\/#\\?]+?",
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "approvalDate": {
+                    "$ref": "#/components/schemas/Date"
+                  },
+                  "userId": {
+                    "type": "number"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Approve transaction",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/api/transactions/borrower/{transactionId}": {
+      "get": {
+        "operationId": "TransactionsController.getTransactionBorrower",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "pattern": "[^\\/#\\?]+?",
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Get transaction borrower",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/api/transactions/lender/{transactionId}": {
+      "get": {
+        "operationId": "TransactionsController.getTransactionLender",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "pattern": "[^\\/#\\?]+?",
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Get transaction lender",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/api/transactions/{userId}": {
+      "get": {
+        "operationId": "TransactionsController.getTransactions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "pattern": "[^\\/#\\?]+?",
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Get transactions",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/api/transactions/initiate-transaction": {
+      "post": {
+        "operationId": "TransactionsController.initiateTransaction",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          },
+          "description": "",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Initiate transaction",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/api/transactions/rate-transaction/{userId}": {
+      "patch": {
+        "operationId": "TransactionsController.rateTransaction",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "pattern": "[^\\/#\\?]+?",
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Transaction"
+              }
+            }
+          },
+          "description": "Transaction",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Rate transaction",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/api/transactions/refuse-transaction/{transactionId}": {
+      "patch": {
+        "operationId": "TransactionsController.refuseTransaction",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "pattern": "[^\\/#\\?]+?",
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "userId": {
+                    "type": "number"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Refuse transaction",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/api/transactions/settle-transaction/{transactionId}": {
+      "put": {
+        "operationId": "TransactionsController.settleTransaction",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "pattern": "[^\\/#\\?]+?",
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "settlementDate": {
+                    "$ref": "#/components/schemas/Date"
+                  },
+                  "userId": {
+                    "type": "number"
+                  },
+                  "receipt": {
+                    "type": "string"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Settle transaction",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/api/transactions/upload-image": {
+      "post": {
+        "operationId": "TransactionsController.uploadImage",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Upload image",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/api/users/login": {
+      "post": {
+        "operationId": "UsersController.login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          },
+          "description": "",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Login",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/register": {
+      "post": {
+        "operationId": "UsersController.register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          },
+          "description": "",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Register",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/send-verification-code": {
+      "post": {
+        "operationId": "UsersController.sendVerificationCode",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          },
+          "description": "",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Send verification code",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/update-password": {
+      "post": {
+        "operationId": "UsersController.updatePassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          },
+          "description": "",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Update password",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/verify-email": {
+      "post": {
+        "operationId": "UsersController.verifyEmail",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          },
+          "description": "",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Verify email",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/validate-email": {
+      "post": {
+        "operationId": "UsersController.validateEmail",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          },
+          "description": "",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Validate email",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/get-user": {
+      "post": {
+        "operationId": "UsersController.getUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          },
+          "description": "",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Get user",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/verify-token": {
+      "post": {
+        "operationId": "UsersController.verifyToken",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Verify token",
+        "tags": [
+          "Users"
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "nickname": {
+            "type": "string",
+            "example": "Jhon Doe"
+          },
+          "email": {
+            "type": "string",
+            "example": "johndoe@gmail.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 125
+          },
+          "lender": {
+            "$ref": "#/components/schemas/UsersModel"
+          },
+          "borrower": {
+            "$ref": "#/components/schemas/UsersModel"
+          }
+        },
+        "required": [
+          "id",
+          "lender",
+          "borrower"
+        ]
+      }
+    }
+  }
+}
