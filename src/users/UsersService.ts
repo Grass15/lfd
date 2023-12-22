@@ -6,6 +6,7 @@ import IUser from "./models/IUser";
 import {AccountStatus, LoginResponse} from "./models/User";
 import UserAdapter from "./models/UserAdapter";
 import EmailsService from "../emails/EmailsService";
+
 dotenv.config();
 
 class UsersService {
@@ -16,6 +17,8 @@ class UsersService {
 
     constructor() {
         this.emailsService = new EmailsService();
+        this.demoCreation();
+
     }
 
     public async getByEmail(email: string): Promise<IUser | null> {
@@ -32,6 +35,16 @@ class UsersService {
                 UserID: userId,
             },
         })
+    }
+
+    public async getUser(email: string) {
+        console.log("getUser for ", email)
+        const user: IUser | null = await this.getByEmail(email);
+        if (user) {
+            return user;
+        } else {
+            throw new Error(ERRORS.USER_DOES_NOT_EXIST);
+        }
     }
 
     public async login(email: string, password: string) {
@@ -98,6 +111,12 @@ class UsersService {
         }
     }
 
+    public async validateEmail(email: string) {
+        if (!(await this.doesUserExist(email))) {
+            throw new Error(ERRORS.USER_DOES_NOT_EXIST);
+        }
+    }
+
     public async verifyEmail(code: number, email: string) {
         const verifiedCode = this.verificationCodes.filter(vCode => vCode[0] == email && vCode[1] == code).pop();
         if (verifiedCode) {
@@ -116,11 +135,10 @@ class UsersService {
         }
     }
 
-    public async validateEmail(email: string) {
-        if (!(await this.doesUserExist(email))){
-            throw new Error(ERRORS.USER_DOES_NOT_EXIST);
-        }
+    private async demoCreation() {
+        await this.createUser("kograss20@gmail.com", "demo", "demo1234");
     }
+
     private async createUser(email: string, nickname: string, password: string): Promise<IUser | null> {
         return await UserAdapter.create({
             Account_Status: AccountStatus.UNVERIFIED,
@@ -132,16 +150,6 @@ class UsersService {
         });
     }
 
-    public async getUser(email: string) {
-        console.log("getUser for ",email)
-        const user: IUser | null = await this.getByEmail(email);
-        if (user) {
-            return user;
-        } else {
-            throw new Error(ERRORS.USER_DOES_NOT_EXIST);
-        }
-    }
-    
     private async doesUserExist(email: string) {
         const user = await this.getByEmail(email);
         return user != null;
