@@ -41,7 +41,7 @@ dbConnection().then(async () => {
         isTableCreated = 'Tables created successfully';
     } catch (error) {
         console.error('Error creating tables:', error);
-        isTableCreated = 'Tables not created';
+        isTableCreated = 'Tables not created' + JSON.stringify(error);
     }
 })
 
