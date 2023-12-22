@@ -33,13 +33,15 @@ const dbConnection = async () => {
         console.error('Unable to connect to the database:', error);
     }
 };
-
+let isTableCreated: string;
 dbConnection().then(async () => {
     try {
-        await sequelize.sync({force: true});
+        await sequelize.sync();
         console.log('Tables created successfully');
+        isTableCreated = 'Tables created successfully';
     } catch (error) {
         console.error('Error creating tables:', error);
+        isTableCreated = 'Tables not created';
     }
 })
 
@@ -48,6 +50,9 @@ const port = process.env.PORT || 8080;
 
 app.use(bodyParser.json());
 
+app.get("/", (req: Request, res: Response) => {
+    res.send(isTableCreated);
+});
 app.use('/', routes);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerOutput));
