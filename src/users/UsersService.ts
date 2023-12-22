@@ -17,7 +17,6 @@ class UsersService {
 
     constructor() {
         this.emailsService = new EmailsService();
-        this.demoCreation();
 
     }
 
@@ -171,7 +170,7 @@ class UsersService {
                 id: user.UserID,
                 nickname: user.User_Name,
                 email: user.Email
-            }, process.env.SECRET_KEY as string,
+            }, "6ec1d1c3a67bb1a81c11eb6d216de3a95d0a80f22d74b30c55a224bbbc9b423f" as string,
             {
                 expiresIn: `${daysExpirationPeriod}s`
             });
