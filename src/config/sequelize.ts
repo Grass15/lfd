@@ -15,12 +15,12 @@ const dbPassword = process.env.DB_PASSWORD
 // });
 
 const sequelize: Sequelize = new Sequelize({
-    dialect: 'mysql',
-    host: 'fdb1032.awardspace.net',
-    port: 3306,
-    username: '4402307_uomiou',
+    dialect: 'postgres',
+    host: 'ec2-34-242-154-118.eu-west-1.compute.amazonaws.com',
+    port: 5432,
+    username: 'qsupdhpaoxbudh',
     password: dbPassword,
-    database: '4402307_uomiou',
+    database: 'dcr1vprt2eetq0',
 });
 
 export {sequelize};
