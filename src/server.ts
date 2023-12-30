@@ -36,7 +36,7 @@ const dbConnection = async () => {
 let isTableCreated: string;
 dbConnection().then(async () => {
     try {
-        await sequelize.sync();
+        await sequelize.sync({force: true});
         console.log('Tables created successfully');
         isTableCreated = 'Tables created successfully';
     } catch (error) {
