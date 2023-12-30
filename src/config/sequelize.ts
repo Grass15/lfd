@@ -20,7 +20,7 @@ const sequelize: Sequelize = new Sequelize({
     host: 'mysql-158687-0.cloudclusters.net',
     port: 17312,
     username: 'admin',
-    password: dbPassword,
+    password: "nhFduVEd",
     database: 'lendafriend',
 });
 
