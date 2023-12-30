@@ -9,6 +9,7 @@ class User {
     readonly email: string;
     readonly id: number;
     nickname!: string;
+    hasPassword: boolean;
     phoneNumber?: string;
     picture: string;
     trustScore: number;
@@ -21,6 +22,7 @@ class User {
         this.email = user.Email;
         this.id = user.UserID;
         this.nickname = user.User_Name;
+        this.hasPassword = user.hasPassword;
         this.phoneNumber = user.Phone_Number;
         this.picture = user.Profile_Picture;
         this.trustScore = user.Social_Credit_Score;

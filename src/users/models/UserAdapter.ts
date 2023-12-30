@@ -11,6 +11,7 @@ class UserAdapter extends Model implements IUser {
     Creation_Date?: Date;
     Email!: string;
     Password_Hash!: string;
+    hasPassword!: boolean;
     Phone_Number?: string;
     Profile_Description?: string;
     Profile_Picture!: string;
@@ -39,6 +40,9 @@ UserAdapter.init(
         },
         Password_Hash: {
             type: DataTypes.STRING(255)
+        },
+        hasPassword: {
+            type: DataTypes.BOOLEAN
         },
         Phone_Number: {
             type: DataTypes.STRING(20)

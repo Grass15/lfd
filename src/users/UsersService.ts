@@ -36,6 +36,16 @@ class UsersService {
         })
     }
 
+    public async getOrCreateUser(email: string, nickname: string) {
+        console.log("get Or Create User for ", email)
+        const user: IUser | null = await this.getByEmail(email);
+        if (user) {
+            return user;
+        } else {
+            return await this.createUser(AccountStatus.ACTIVE, email, nickname, false);
+        }
+    }
+
     public async getUser(email: string) {
         console.log("getUser for ", email)
         const user: IUser | null = await this.getByEmail(email);
@@ -49,22 +59,27 @@ class UsersService {
     public async login(email: string, password: string) {
         const user: IUser | null = await this.getByEmail(email);
         if (user) {
-            const isRightPassword: boolean = await bcrypt.compare(password, user.Password_Hash);
-            if (isRightPassword) {
-                if (user.Account_Status == AccountStatus.UNVERIFIED) {
-                    throw new Error(ERRORS.UNVERIFIED_ACCOUNT);
-                } else if (user.Account_Status == AccountStatus.SUSPENDED) {
-                    throw new Error(ERRORS.SUSPENDED_ACCOUNT);
-                } else {
-                    const loginResponse: LoginResponse = {
-                        token: this.getToken(user),
-                        userData: user
+            if (user.hasPassword) {
+                const isRightPassword: boolean = await bcrypt.compare(password, user.Password_Hash);
+                if (isRightPassword) {
+                    if (user.Account_Status == AccountStatus.UNVERIFIED) {
+                        throw new Error(ERRORS.UNVERIFIED_ACCOUNT);
+                    } else if (user.Account_Status == AccountStatus.SUSPENDED) {
+                        throw new Error(ERRORS.SUSPENDED_ACCOUNT);
+                    } else {
+                        const loginResponse: LoginResponse = {
+                            token: this.getToken(user),
+                            userData: user
+                        }
+                        return loginResponse;
                     }
-                    return loginResponse;
+                } else {
+                    throw new Error(ERRORS.INVALID_CREDENTIALS);
                 }
             } else {
                 throw new Error(ERRORS.INVALID_CREDENTIALS);
             }
+
         } else {
             throw new Error(ERRORS.USER_DOES_NOT_EXIST);
         }
@@ -76,7 +91,7 @@ class UsersService {
         if (await this.doesUserExist(email)) {
             throw new Error(ERRORS.USER_ALREADY_EXISTS);
         } else {
-            return await this.createUser(email, nickname, password);
+            return await this.createUser(AccountStatus.UNVERIFIED, email, nickname, true, password);
         }
     }
 
@@ -94,10 +109,11 @@ class UsersService {
 
         if (await this.doesUserExist(email)) {
             const hashedPassword = await this.hashPassword(password);
-
+            console.log("set password");
             await UserAdapter.update(
                 {
                     Password_Hash: hashedPassword,
+                    hasPassword: true,
                 },
                 {
                     where: {
@@ -134,19 +150,29 @@ class UsersService {
         }
     }
 
-    private async demoCreation() {
-        await this.createUser("kograss20@gmail.com", "demo", "demo1234");
-    }
+    private async createUser(
+        AccountStatus: string,
+        email: string,
+        nickname: string,
+        hasPassword: boolean,
+        password?: string
+    ): Promise<IUser | null> {
+        try {
+            const userObject = {
+                Account_Status: AccountStatus,
+                Address: email,
+                Creation_Date: Date.now(),
+                Email: email,
+                User_Name: nickname,
+                hasPassword: hasPassword,
+                Password_Hash: hasPassword ? await this.hashPassword(password || "") : undefined,
+            };
 
-    private async createUser(email: string, nickname: string, password: string): Promise<IUser | null> {
-        return await UserAdapter.create({
-            Account_Status: AccountStatus.UNVERIFIED,
-            Address: email,
-            Creation_Date: Date.now(),
-            Email: email,
-            User_Name: nickname,
-            Password_Hash: await this.hashPassword(password),
-        });
+            return await UserAdapter.create(userObject);
+        } catch (error) {
+            console.error("Error creating user:", error);
+            return null;
+        }
     }
 
     private async doesUserExist(email: string) {
@@ -165,14 +191,14 @@ class UsersService {
     }
 
     private getToken(user: IUser) {
-        const daysExpirationPeriod: number = 60 * 60;
+        const daysExpirationPeriod: number = 30;
         return jwt.sign({
                 id: user.UserID,
                 nickname: user.User_Name,
                 email: user.Email
-            }, "6ec1d1c3a67bb1a81c11eb6d216de3a95d0a80f22d74b30c55a224bbbc9b423f" as string,
+            }, process.env.SECRET_KEY as string,
             {
-                expiresIn: `${daysExpirationPeriod}s`
+                expiresIn: `${daysExpirationPeriod}d`
             });
     }
 

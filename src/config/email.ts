@@ -6,9 +6,9 @@ export const emailTransporter = nodemailer.createTransport({
     port: 587,
     auth: {
         user: 'lunarmoonservice@gmail.com',
-        pass: 'rejq dico gchn zqap',
+        pass: 'iptz blty sxta pitx',
     },
     secure: false,
 });
-
+ 
 export const noReplyEmailAddress = '<noreply@lendafriend.com>'

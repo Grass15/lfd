@@ -1,4 +1,4 @@
-import {Request, Response} from "express";
+import {Request, Response, NextFunction} from "express";
 import {JsonController, Body, Post, Req, Res} from "routing-controllers";
 import BaseController from "../utils/BaseController";
 import IUser from "./models/IUser";
@@ -12,6 +12,53 @@ class UsersController extends BaseController {
     constructor() {
         super();
         this.service = new UsersService();
+    }
+
+    @Post("/change-password")
+    public async changePassword(@Req() request: Request, @Body() body: any, @Res() response: Response) {
+        try {
+            console.log(body);
+            console.log(request.headers);
+            const data = await this.authenticate(request);
+            const user = await this.service.getUser(data.email);
+            await this.service.login(user.Email, body.oldPassword);
+            await this.service.updatePassword(body.email, body.newPassword);
+            return response.status(201).json({"status": 1, message: 'Password Updated successfully'});
+        } catch (error) {
+            return response.status(400).json({"status": 0, error: error});
+        }
+    }
+
+    // user this route from verify token for the passkey to get the user data
+    @Post("/get-user")
+    public async getUser(@Req() request: Request, @Body() body: any, @Res() response: Response) {
+        try {
+            console.log("check passage auth:", request.headers)
+            const loginMethod = body.loginMethod;
+            console.log("login method: ", loginMethod);
+            if (loginMethod == "passkey") {
+                const user_email = await this.passageAuthMiddleware(request, response, () => Promise.resolve())
+                console.log(user_email)
+                body.email = user_email;
+            } else if (loginMethod == "google") {
+                const {userEmail, userName} = await this.googleAuthMiddleware(request);
+                console.log("user email: ", userEmail, " and user name: ", userName);
+                const user = await this.service.getOrCreateUser(userEmail, userName);
+                return response.status(201).json({"status": 1, message: 'Get User Success', user});
+            } else if (loginMethod == "facebook") {
+                const {userEmail, userName} = await this.facebookAuthMiddleware(request);
+                console.log("user email: ", userEmail, " and user name: ", userName);
+                const user = await this.service.getOrCreateUser(userEmail, userName);
+                return response.status(201).json({"status": 1, message: 'Get User Success', user});
+            }
+
+            const user = await this.service.getUser(body.email);
+            console.log(user)
+            return response.status(201).json({"status": 1, message: 'Get User Success', user});
+        } catch (error) {
+            console.log(error)
+            return response.status(404).json({"status": 0, error: error});
+        }
     }
 
     @Post("/login")
@@ -72,17 +119,6 @@ class UsersController extends BaseController {
         }
     }
 
-    @Post("/verify-email")
-    public async verifyEmail(@Body() body: any, @Res() response: Response) {
-        try {
-            await this.service.verifyEmail(body.code, body.email);
-            return response.status(201).json({"status": 1, message: 'Email verified successfully'});
-        } catch (error) {
-            console.log("Just a test")
-            return response.status(400).json({"status": 0, error: error});
-        }
-    }
-
     @Post("/validate-email")
     public async validateEmail(@Body() body: any, @Res() response: Response) {
         try {
@@ -93,33 +129,34 @@ class UsersController extends BaseController {
         }
     }
 
-    @Post("/get-user")
-    public async getUser(@Body() body: any, @Res() response: Response) {
+    @Post("/verify-email")
+    public async verifyEmail(@Body() body: any, @Res() response: Response) {
         try {
-            console.log(body.email)
-            const user = await this.service.getUser(body.email);
-            return response.status(201).json({"status": 1, message: 'Get User Success', user});
+            await this.service.verifyEmail(body.code, body.email);
+            return response.status(201).json({"status": 1, message: 'Email verified successfully'});
         } catch (error) {
-            return response.status(404).json({"status": 0, error: error});
-        } 
+            console.log("Just a test")
+            return response.status(400).json({"status": 0, error: "code incorrect"});
+        }
     }
 
     @Post("/verify-token")
     public async verifyToken(@Req() request: Request, @Res() response: Response) {
         try {
             const data = await this.authenticate(request);
-            console.log("user from check token: ",data);
             const user = await this.service.getUser(data.email);
-            console.log("user from check token2: ",user);
             return response.status(201).json({"status": 1, message: 'Authorized', user});
         } catch (error) {
             return response.status(403).json({"status": 0, error: error});
         }
     }
-    
 
 }
 
 UsersController.updateSwagger();
 
 export default UsersController;
+
+function Next(): (target: UsersController, propertyKey: "getUser", parameterIndex: 3) => void {
+    throw new Error("Function not implemented.");
+}

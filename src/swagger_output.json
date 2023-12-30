@@ -620,6 +620,32 @@
           "Users"
         ]
       }
+    },
+    "/api/users/change-password": {
+      "post": {
+        "operationId": "UsersController.changePassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          },
+          "description": "",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Change password",
+        "tags": [
+          "Users"
+        ]
+      }
     }
   },
   "components": {

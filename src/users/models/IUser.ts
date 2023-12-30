@@ -5,6 +5,7 @@ interface IUser {
     Creation_Date?: Date;
     Email: string;
     Password_Hash: string;
+    hasPassword: boolean;
     Phone_Number?: string;
     Profile_Description?: string;
     Profile_Picture: string;
