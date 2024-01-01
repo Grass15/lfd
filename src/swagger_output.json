@@ -422,6 +422,58 @@
         ]
       }
     },
+    "/api/users/change-password": {
+      "post": {
+        "operationId": "UsersController.changePassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          },
+          "description": "",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Change password",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/get-user": {
+      "post": {
+        "operationId": "UsersController.getUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          },
+          "description": "",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Get user",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
     "/api/users/login": {
       "post": {
         "operationId": "UsersController.login",
@@ -526,32 +578,6 @@
         ]
       }
     },
-    "/api/users/verify-email": {
-      "post": {
-        "operationId": "UsersController.verifyEmail",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {}
-            }
-          },
-          "description": "",
-          "required": false
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {}
-            },
-            "description": "Successful response"
-          }
-        },
-        "summary": "Verify email",
-        "tags": [
-          "Users"
-        ]
-      }
-    },
     "/api/users/validate-email": {
       "post": {
         "operationId": "UsersController.validateEmail",
@@ -578,9 +604,9 @@
         ]
       }
     },
-    "/api/users/get-user": {
+    "/api/users/verify-email": {
       "post": {
-        "operationId": "UsersController.getUser",
+        "operationId": "UsersController.verifyEmail",
         "requestBody": {
           "content": {
             "application/json": {
@@ -598,7 +624,7 @@
             "description": "Successful response"
           }
         },
-        "summary": "Get user",
+        "summary": "Verify email",
         "tags": [
           "Users"
         ]
@@ -616,32 +642,6 @@
           }
         },
         "summary": "Verify token",
-        "tags": [
-          "Users"
-        ]
-      }
-    },
-    "/api/users/change-password": {
-      "post": {
-        "operationId": "UsersController.changePassword",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {}
-            }
-          },
-          "description": "",
-          "required": false
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {}
-            },
-            "description": "Successful response"
-          }
-        },
-        "summary": "Change password",
         "tags": [
           "Users"
         ]

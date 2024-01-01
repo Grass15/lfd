@@ -2,6 +2,7 @@ import {Body, BodyParam, Get, JsonController, Param, Post, Res} from "routing-co
 import {ResponseSchema} from "routing-controllers-openapi";
 import IUser from "../users/models/IUser";
 import User from "../users/models/User";
+import UsersService from "../users/UsersService";
 import BaseController from "../utils/BaseController";
 import ContactsService from "./ContactsService";
 import Contact, {AddContact} from "./models/Contact";
@@ -13,11 +14,13 @@ class ContactsController extends BaseController {
 
     emailService: EmailsService;
     service: ContactsService;
+    userService: UsersService;
 
     constructor() {
         super();
         this.service = new ContactsService();
         this.emailService = new EmailsService();
+        this.userService = new UsersService();
     }
 
     @Post("/")
@@ -26,6 +29,10 @@ class ContactsController extends BaseController {
         try {
             const newContactData = await this.service.addContact(contact);
             if (newContactData) {
+                const otherPersonContact = contact;
+                otherPersonContact.otherPersonEmail = contact.owner.email;
+                otherPersonContact.owner = new User(await this.userService.getUser(contact.otherPersonEmail));
+                await this.service.addContact(otherPersonContact);
                 const newContact = new Contact(newContactData);
                 newContact.setOtherPerson(new User(newContactData.get('OtherPerson') as IUser));
                 response.status(201).json({"status": 1, contact: newContact});
