@@ -29,10 +29,10 @@ class ContactsController extends BaseController {
         try {
             const newContactData = await this.service.addContact(contact);
             if (newContactData) {
-                const otherPersonContact = contact;
-                otherPersonContact.otherPersonEmail = contact.owner.email;
-                otherPersonContact.owner = new User(await this.userService.getUser(contact.otherPersonEmail));
-                await this.service.addContact(otherPersonContact);
+                // const otherPersonContact = contact;
+                // otherPersonContact.otherPersonEmail = contact.owner.email;
+                // otherPersonContact.owner = new User(await this.userService.getUser(contact.otherPersonEmail));
+                // await this.service.addContact(otherPersonContact);
                 const newContact = new Contact(newContactData);
                 newContact.setOtherPerson(new User(newContactData.get('OtherPerson') as IUser));
                 response.status(201).json({"status": 1, contact: newContact});
