@@ -71,73 +71,105 @@ server.listen(port, () => {
 
 
 const privacyPolicy = `
-Privacy Policy for Lend A Friend (LenDaFriend)
+<h1 style="font-size: 24px; color: #02C7F2; font-weight: bold;">Privacy Policy for LenDaFriend </h1><br/>
 
-Last updated: 12/21/2023
+Last updated: 12/21/2023<br/><br/>
 
 This Privacy Policy describes how LenDaFriend collects, uses, and shares personal and sensitive user data. Please read this policy carefully to understand our practices regarding your information and how we will handle it.
 
-### 1. Introduction
+<h3 style="font-size: 20px; font-weight: bold;">### 1. Introduction</h3>
 
-This Privacy Policy applies to the LenDaFriend mobile application and its associated services. By using our app, you agree to the terms of this Privacy Policy.
+<p style="font-size: 16px;">
+    This Privacy Policy applies to the LenDaFriend mobile application and its associated services. By using our app, you agree to the terms of this Privacy Policy.
+</p>
 
-### 2. Information We Collect
 
-#### a. Personal and Sensitive User Data
+<h3 style="font-size: 20px; font-weight: bold;">### 2. Information We Collect</h3>
 
+<h4 style="font-size: 18px; font-weight: bold;">#### a. Personal and Sensitive User Data</h4>
+
+<p style="font-size: 16px;">
 LenDaFriend may collect the following types of personal and sensitive user data:
+<ul>
+    <li>User profile information (e.g., name, profile picture)</li>
+    <li>Contact information (e.g., email address)</li>
+    <li>Location information (e.g., GPS data)</li>
+    <li>User-generated content (e.g., messages, posts)</li>
+</ul>
+</p>
 
-- User profile information (e.g., name, profile picture)
-- Contact information (e.g., email address)
-- Location information (e.g., GPS data)
-- User-generated content (e.g., messages, posts)
+<h4 style="font-size: 18px; font-weight: bold;">#### b. How We Collect Information</h4>
 
-#### b. How We Collect Information
-
+<p style="font-size: 16px;">
 We collect user data through the following means:
+<ul>
+    <li>User input during account registration and usage of the app.</li>
+    <li>Access to device features such as camera, location, and contacts.</li>
+    <li>Communication between users within the app.</li>
+</ul>
+</p>
 
-- User input during account registration and usage of the app.
-- Access to device features such as camera, location, and contacts.
-- Communication between users within the app.
+<h3 style="font-size: 20px; font-weight: bold;">### 3. How We Use Your Information</h3>
 
-### 3. How We Use Your Information
-
+<p style="font-size: 16px;">
 We use the collected data for the following purposes:
+<ul>
+    <li>Providing and improving our services.</li>
+    <li>Personalizing user experience.</li>
+    <li>Responding to user inquiries and support requests.</li>
+    <li>Analyzing app usage patterns to enhance functionality.</li>
+</ul>
+</p>
 
-- Providing and improving our services.
-- Personalizing user experience.
-- Responding to user inquiries and support requests.
-- Analyzing app usage patterns to enhance functionality.
+<h3 style="font-size: 20px; font-weight: bold;">### 4. Information Sharing</h3>
 
-### 4. Information Sharing
-
+<p style="font-size: 16px;">
 We may share personal and sensitive user data with the following parties:
+<ul>
+    <li>Other LenDaFriend users as per the app's functionality.</li>
+    <li>Service providers assisting with app development, maintenance, and support.</li>
+    <li>Legal authorities, if required by law or to protect our rights.</li>
+</ul>
+</p>
 
-- Other LenDaFriend users as per the app's functionality.
-- Service providers assisting with app development, maintenance, and support.
-- Legal authorities, if required by law or to protect our rights.
 
-### 5. Security
+<h3 style="font-size: 20px; font-weight: bold;">### 5. Security</h3>
 
+<p>
 We implement security measures to protect personal and sensitive user data, including encryption and access controls. However, no method of transmission or storage is 100% secure.
+</p>
 
-### 6. Data Retention and Deletion
+
+<h3 style="font-size: 20px; font-weight: bold;">### 6. Data Retention and Deletion</h3>
+
+<p>
 
 We retain user data as long as necessary for the purposes outlined in this Privacy Policy. Users can request data deletion by contacting us through the provided privacy point of contact.
+</p>
 
-### 7. Privacy Point of Contact
 
+<h3 style="font-size: 20px; font-weight: bold;">### 7. Privacy Point of Contact</h3>
+
+<p>
 For privacy inquiries or requests, please contact us at:
+<a href="mailto:kograss20@gmail.com">LenDaFriend Team</a>
+</p>
 
-kograss20@gmail.com
 
-### 8. Changes to this Privacy Policy
 
+<h3 style="font-size: 20px; font-weight: bold;">### 8. Changes to this Privacy Policy</h3>
+
+<p>
 We may update this Privacy Policy periodically. The latest version will be available on our app's store listing page and within the app.
+</p>
 
-### 9. Availability
 
+<h3 style="font-size: 20px; font-weight: bold;">### 9. Availability</h3>
+
+<p>
 This Privacy Policy is accessible on an active, publicly accessible, and non-geofenced URL at [Your Privacy Policy URL].
 
 By using LenDaFriend, you acknowledge that you have read and understood this Privacy Policy. If you do not agree with the terms outlined herein, please do not use our app.
+
+</p>
 `;
