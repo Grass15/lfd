@@ -167,7 +167,7 @@ We may update this Privacy Policy periodically. The latest version will be avail
 <h3 style="font-size: 20px; font-weight: bold;">### 9. Availability</h3>
 
 <p>
-This Privacy Policy is accessible on an active, publicly accessible, and non-geofenced URL at [Your Privacy Policy URL].
+This Privacy Policy is accessible on an active, publicly accessible, and non-geofenced URL at <a href="https://lendafriend-d0f3d455a73a.herokuapp.com/privacy-policy">LenDaFriend privacy policy</a>.
 
 By using LenDaFriend, you acknowledge that you have read and understood this Privacy Policy. If you do not agree with the terms outlined herein, please do not use our app.
 
