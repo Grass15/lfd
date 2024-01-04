@@ -8,7 +8,7 @@
     "copy-static": "copyfiles -u 1 src/public/**/* build",
     "start": "node build/server.js",
     "dev": "concurrently \"npx tsc --watch\" \"npm run copy-static\" \"ts-node src/swagger.ts\" \"nodemon --ignore src/swagger_output.json -q build/server.js\" ",
-    "heroku-postbuild": "npx tsc && copyfiles -u 1 src/public/**/* build"
+    "heroku-postbuild": "npx tsc && copyfiles -u 1 src/public/* build"
   },
   "author": "Fabien KORGO",
   "license": "ISC",
