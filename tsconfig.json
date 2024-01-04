@@ -119,6 +119,7 @@
   "include": [
     "src/**/*.ts",
     "src/*.ts",
-    "public/**/*"
+    "public/**/*",
+    "public/*"
   ]
 }
