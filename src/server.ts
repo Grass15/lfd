@@ -49,7 +49,6 @@ dbConnection().then(async () => {
 const port = process.env.PORT || 8080;
 
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerOutput));
 app.use('/', express.static(path.join(__dirname, 'public')))
 
