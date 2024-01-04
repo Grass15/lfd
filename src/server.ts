@@ -50,18 +50,8 @@ const port = process.env.PORT || 8080;
 
 app.use(bodyParser.json());
 
-app.get("/", (req: Request, res: Response) => {
-    res.send(isTableCreated);
-});
-
-app.get('/privacy-policy', (req, res) => {
-    res.send(privacyPolicy);
-});
-app.use('/', routes);
-
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerOutput));
-app.use('/public/images/', express.static(path.join(__dirname, 'public/images')));
-console.log(__dirname)
+app.use('/', express.static(path.join(__dirname, 'public')))
 
 
 server.listen(port, () => {
