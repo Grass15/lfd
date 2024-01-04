@@ -8,7 +8,7 @@
     "copy-static": "copyfiles -u 1 src/public/**/* build",
     "start": "node build/server.js",
     "dev": "concurrently \"npx tsc --watch\" \"npm run copy-static\" \"ts-node src/swagger.ts\" \"nodemon --ignore src/swagger_output.json -q build/server.js\" ",
-    "postinstall": "npm run copy-static"
+    "postinstall": "npx tsc && npm run copy-static"
   },
   "author": "Fabien KORGO",
   "license": "ISC",
