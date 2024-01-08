@@ -10,8 +10,9 @@ import Lender from "../users/models/Lender";
 import User from "../users/models/User";
 import UsersService from "../users/UsersService";
 import BaseController from "../utils/BaseController";
+import {Cash} from "./models/ExchangedGood";
 import ITransaction from "./models/ITransaction";
-import Transaction, {TransactionInitiationParams} from "./models/Transaction";
+import Transaction, {ApprovalReceiptParams, TransactionInitiationParams} from "./models/Transaction";
 import TransactionAdapter from "./models/TransactionAdapter";
 import TransactionsService from "./TransactionsService";
 
@@ -34,13 +35,28 @@ class TransactionsController extends BaseController {
         // Add logic to check if user has right to do this
         await this.service.approveTransaction(approvalDate, transactionId);
         const transaction: Transaction = await this.getTransactionById(transactionId, userId);
-        const approverNameInContact = await this.contactsService.getContactDescription(transaction.initiator.id, userId);
+        const approverNameInReceiverContact = await this.contactsService.getContactDescription(transaction.initiator.id, userId);
         this.sendTransactionNotification(
             transaction.id as number,
             userId,
-            `${approverNameInContact} approved your transaction request`,
+            `${approverNameInReceiverContact} approved your transaction request`,
             NOTIFICATION_TYPE.INITIATION_REQUEST
         );
+        // switch (transaction.type){
+        //     case "cash":
+        // }
+        //
+        // const approver: User = userId == transaction.lender.id ? transaction.lender : transaction.borrower;
+        // const initiator: User = userId == transaction.lender.id ? transaction.borrower : transaction.lender;
+        // const approvalReceiptParams: ApprovalReceiptParams = {
+        //     description: transaction.exchangedGood.description,
+        //     email: approver.email,
+        //     nickname: approver.nickname,
+        //     friendName: initiator.nickname,
+        //     transactionId: transactionId,
+        //     transactionType: transaction.type,
+        //
+        // };
         return transaction;
     }
 

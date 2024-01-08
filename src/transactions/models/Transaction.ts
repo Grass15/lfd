@@ -42,6 +42,7 @@ class Transaction {
         this.lender = lender;
     }
 
+
     private setExchangedGoodDetails(transaction: ITransaction) {
         if (transaction.Borrowed_Amount) {
             this.exchangedGood = new Cash(transaction.Description, transaction.Borrowed_Amount, transaction.Borrowed_Currency);
@@ -66,6 +67,16 @@ export enum TransactionType {
     CASH = 'Cash',
     ITEM = "Item",
     OTHER = "Other"
+}
+
+export interface ApprovalReceiptParams {
+    description: string,
+    email: string,
+    friendName: string
+    nickname: string,
+    transactionId: number,
+    transactionType: string,
+    transactionValue: string,
 }
 
 export default Transaction;
