@@ -52,7 +52,6 @@ app.use(bodyParser.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerOutput));
 app.use(express.static(path.join(__dirname, 'public')))
 app.get('/', (req, res) => {
-    // Send the index.html file when the root URL is requested
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 

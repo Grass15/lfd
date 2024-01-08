@@ -30,10 +30,12 @@ export class Item extends ExchangedGood {
 }
 
 export class Other extends ExchangedGood {
+    public image?: string;
     public topic: string;
 
     constructor(description: string, topic: string) {
         super(description);
         this.topic = topic;
+        // this.image = image;
     }
 }

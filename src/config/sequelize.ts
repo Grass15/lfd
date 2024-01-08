@@ -5,24 +5,24 @@ dotenv.config();
 
 const dbPassword = process.env.DB_PASSWORD
 
-// const sequelize: Sequelize = new Sequelize({
-//     dialect: 'mysql',
-//     host: 'localhost',
-//     port: 3306,
-//     username: 'root',
-//     password: dbPassword || "root",
-//     database: 'lendafriend',
-// });
-
-
 const sequelize: Sequelize = new Sequelize({
     dialect: 'mysql',
-    host: 'mysql-158687-0.cloudclusters.net',
-    port: 17312,
-    username: 'admin',
-    password: dbPassword,
+    host: 'localhost',
+    port: 3306,
+    username: 'root',
+    password: dbPassword || "root",
     database: 'lendafriend',
 });
+
+
+// const sequelize: Sequelize = new Sequelize({
+//     dialect: 'mysql',
+//     host: 'mysql-158687-0.cloudclusters.net',
+//     port: 17312,
+//     username: 'admin',
+//     password: dbPassword,
+//     database: 'lendafriend',
+// });
 
 // const sequelize: Sequelize = new Sequelize({
 //     dialect: 'mysql',

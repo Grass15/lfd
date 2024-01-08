@@ -33,7 +33,7 @@ class TransactionsController extends BaseController {
     public async approveTransaction(@BodyParam("approvalDate") approvalDate: Date, @BodyParam("userId") userId: number, @Param('transactionId') transactionId: number) {
         // Add logic to check if user has right to do this
         await this.service.approveTransaction(approvalDate, transactionId);
-        const transaction: Transaction = await this.getTransactionById(transactionId);
+        const transaction: Transaction = await this.getTransactionById(transactionId, userId);
         const approverNameInContact = await this.contactsService.getContactDescription(transaction.initiator.id, userId);
         this.sendTransactionNotification(
             transaction.id as number,
@@ -70,15 +70,17 @@ class TransactionsController extends BaseController {
         const borrowedTransactionsData = await this.service.getBorrowedTransactions(userId);
         const lentTransactionsData = await this.service.getLentTransactions(userId);
         if (borrowedTransactionsData) {
-            transactions.push(...borrowedTransactionsData.map(transactionData =>
-                this.adaptTransaction(transactionData)
-            ));
+            const adaptedTransactions = await Promise.all(
+                borrowedTransactionsData.map(async (transactionData) => await this.adaptTransaction(transactionData, userId))
+            );
+            transactions.push(...adaptedTransactions);
         }
 
         if (lentTransactionsData) {
-            transactions.push(...lentTransactionsData.map(transactionData =>
-                this.adaptTransaction(transactionData)
-            ));
+            const adaptedTransactions = await Promise.all(
+                lentTransactionsData.map(async (transactionData) => await this.adaptTransaction(transactionData, userId))
+            );
+            transactions.push(...adaptedTransactions);
         }
 
         return transactions;
@@ -87,7 +89,7 @@ class TransactionsController extends BaseController {
     @Post("/initiate-transaction")
     public async initiateTransaction(@Body() transaction: TransactionInitiationParams) {
         const newTransactionData = await this.service.initiateTransaction(transaction) as TransactionAdapter;
-        const newTransaction = await this.getTransactionById(newTransactionData.TransactionID);
+        const newTransaction = await this.getTransactionById(newTransactionData.TransactionID, transaction.initiator.id);
         const receiver = this.getTransactionRequestReceiver(newTransaction);
         const initiatorNameInContact = await this.contactsService.getContactDescription(receiver.id, transaction.initiator.id);
         this.sendTransactionNotification(
@@ -109,7 +111,7 @@ class TransactionsController extends BaseController {
     public async refuseTransaction(@BodyParam("userId") userId: number, @Param('transactionId') transactionId: number) {
         // Add logic to check if user has right to do this
         await this.service.refuseTransaction(transactionId);
-        const transaction: Transaction = await this.getTransactionById(transactionId)
+        const transaction: Transaction = await this.getTransactionById(transactionId, userId);
         const refuserNameInContact = await this.contactsService.getContactDescription(transaction.initiator.id, userId);
         this.sendTransactionNotification(
             transactionId,
@@ -124,7 +126,7 @@ class TransactionsController extends BaseController {
     public async settleTransaction(@BodyParam("settlementDate") settlementDate: Date, @BodyParam("userId") userId: number, @BodyParam("receipt") receipt: string, @Param('transactionId') transactionId: number) {
         // Add logic to check if user has right to do this
         await this.service.settleTransaction(settlementDate, transactionId, receipt);
-        const transaction: Transaction = await this.getTransactionById(transactionId);
+        const transaction: Transaction = await this.getTransactionById(transactionId, userId);
         const settlerNameInContact = await this.contactsService.getContactDescription(transaction.lender.id, userId);
         this.sendTransactionNotification(
             transactionId,
@@ -142,17 +144,35 @@ class TransactionsController extends BaseController {
         return image.filename;
     }
 
-    private async getTransactionById(transactionId: number) {
+    private async getTransactionById(transactionId: number, userId: number) {
         const transactionData = await this.service.getTransactionById(transactionId);
-        return this.adaptTransaction(transactionData)
+        return this.adaptTransaction(transactionData, userId)
     }
 
-    private adaptTransaction(transactionData: TransactionAdapter | null) {
+    private async adaptTransaction(transactionData: TransactionAdapter | null, userId: number) {
         const transaction: Transaction = new Transaction(transactionData as ITransaction);
         if (transactionData) {
             transaction.setBorrower(new Borrower(transactionData.get('Borrower') as IUser, transactionData.Transaction_Rating_Borrower, transactionData.Transaction_Rating_Borrower_Message));
             transaction.setLender(new Borrower(transactionData.get('Lender') as IUser, transactionData.Transaction_Rating_Lender, transactionData.Transaction_Rating_Lender_Message));
             transaction.setInitiator(new User(transactionData.get('Initiator') as IUser));
+        }
+        switch (userId) {
+            case transaction.lender.id:
+                const borrowerNameInLenderContact = await this.contactsService.getContactDescription(transaction.lender.id, transaction.borrower.id);
+                transaction.borrower.nickname = borrowerNameInLenderContact;
+                if (userId != transaction.initiator.id) {
+                    const initiatorNameInReceiverContact = await this.contactsService.getContactDescription(transaction.borrower.id, transaction.lender.id);
+                    transaction.initiator.nickname = initiatorNameInReceiverContact;
+                }
+                break;
+            case  transaction.borrower.id:
+                const lenderNameInBorrowerContact = await this.contactsService.getContactDescription(transaction.borrower.id, transaction.lender.id);
+                transaction.lender.nickname = lenderNameInBorrowerContact;
+                if (userId != transaction.initiator.id) {
+                    const initiatorNameInReceiverContact = await this.contactsService.getContactDescription(transaction.lender.id, transaction.borrower.id);
+                    transaction.initiator.nickname = initiatorNameInReceiverContact;
+                }
+                break;
         }
         return transaction;
     }
