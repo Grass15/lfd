@@ -159,18 +159,18 @@ class TransactionsController extends BaseController {
         switch (userId) {
             case transaction.lender.id:
                 const borrowerNameInLenderContact = await this.contactsService.getContactDescription(transaction.lender.id, transaction.borrower.id);
-                transaction.borrower.nickname = borrowerNameInLenderContact;
+                transaction.borrower.nickname = borrowerNameInLenderContact || transaction.borrower.email;
                 if (userId != transaction.initiator.id) {
                     const initiatorNameInReceiverContact = await this.contactsService.getContactDescription(transaction.borrower.id, transaction.lender.id);
-                    transaction.initiator.nickname = initiatorNameInReceiverContact;
+                    transaction.initiator.nickname = initiatorNameInReceiverContact || transaction.lender.email;
                 }
                 break;
             case  transaction.borrower.id:
                 const lenderNameInBorrowerContact = await this.contactsService.getContactDescription(transaction.borrower.id, transaction.lender.id);
-                transaction.lender.nickname = lenderNameInBorrowerContact;
+                transaction.lender.nickname = lenderNameInBorrowerContact || transaction.lender.email;
                 if (userId != transaction.initiator.id) {
                     const initiatorNameInReceiverContact = await this.contactsService.getContactDescription(transaction.lender.id, transaction.borrower.id);
-                    transaction.initiator.nickname = initiatorNameInReceiverContact;
+                    transaction.initiator.nickname = initiatorNameInReceiverContact || transaction.borrower.email;
                 }
                 break;
         }
