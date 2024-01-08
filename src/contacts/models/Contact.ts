@@ -16,6 +16,7 @@ class Contact {
 
     public setOtherPerson(otherPerson: User) {
         this.otherPerson = otherPerson;
+        this.otherPerson.nickname = this.description;
     }
 
     public setOwner(owner: User) {
