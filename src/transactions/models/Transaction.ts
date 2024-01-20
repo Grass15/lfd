@@ -1,73 +1,40 @@
-import Lender from "../../users/models/Lender";
-import Borrower from "../../users/models/Borrower";
 import User from "../../users/models/User";
 import ITransaction from "./ITransaction";
-import {Cash, ExchangedGood, Item, Other} from "./ExchangedGood";
-
-export type TransactionInitiationParams = Pick<Transaction, "borrower" | "exchangedGood" | "initiationDate" | "initiator" | "lender" | "status" | "type" | "target">;
+import {ExchangedGood} from "./exchangedGood/ExchangedGood";
+import TransactionParty from "./transactionParty/TransactionParty";
 
 class Transaction {
     public readonly approvalDate?: Date;
-    public borrower!: Borrower;
     public exchangedGood!: ExchangedGood;
     readonly id?: number;
     public readonly initiationDate?: Date;
-    public initiator!: User;
-    public lender!: Lender;
+    public parties!: TransactionParty[];
     public readonly settlementDate?: Date;
     public status!: TransactionStatus;
     public target?: Date;
-    public type!: TransactionType;
+    public type: TransactionType;
 
     constructor(transaction: ITransaction) {
-        this.approvalDate = transaction.Transaction_Date;
-        this.setExchangedGoodDetails(transaction);
-        this.id = transaction.TransactionID;
-        this.initiationDate = transaction.Initiation_Date;
-        this.settlementDate = transaction.Transaction_Returned_Date;
-        this.status = transaction.Status;
-        this.target = transaction.Target_Date;
-        this.type = transaction.Transaction_Type;
+        this.approvalDate = transaction.approvalDate;
+        this.id = transaction.transactionId;
+        this.initiationDate = transaction.initiationDate;
+        this.status = transaction.status;
+        this.target = transaction.targetedSettlementDate;
+        this.type = transaction.type;
     }
 
-    public setBorrower(borrower: Borrower) {
-        this.borrower = borrower;
+    addParty(party: TransactionParty): void {
+        this.parties = this.parties == undefined ? [] : this.parties;
+        this.parties.push(party);
     }
 
-    public setInitiator(initiator: User) {
-        this.initiator = initiator;
-    }
+    private setExchangedGoodDetails(exchangedGood: ExchangedGood) {
 
-    public setLender(lender: Lender) {
-        this.lender = lender;
-    }
-
-
-    private setExchangedGoodDetails(transaction: ITransaction) {
-        if (transaction.Borrowed_Amount) {
-            this.exchangedGood = new Cash(transaction.Description, transaction.Borrowed_Amount, transaction.Borrowed_Currency);
-        } else if (transaction.Transaction_Topic_Name) {
-            this.exchangedGood = new Other(transaction.Description, transaction.Transaction_Topic_Name);
-        } else {
-            this.exchangedGood = new Item(transaction.Description, transaction.Item_Name as string, transaction.Image_Of_Item); //Need to add item name in db
-        }
     }
 
 
 }
 
-export enum TransactionStatus {
-    PENDING = "Pending",
-    PROCESSING = "Processing",
-    SETTLED = "Settled",
-    REFUSED = "Refused"
-}
-
-export enum TransactionType {
-    CASH = 'Cash',
-    ITEM = "Item",
-    OTHER = "Other"
-}
 
 export interface ApprovalReceiptParams {
     description: string,
@@ -78,6 +45,30 @@ export interface ApprovalReceiptParams {
     transactionType: string,
     transactionValue: string,
 }
+
+
+export enum TransactionPartyRoles {
+    BORROWER = "borrower",
+    INITIATOR = "initiator",
+    LENDER = "lender",
+    RECEIVER = "receiver",
+    SENDER = "sender",
+}
+
+export enum TransactionStatus {
+    AWAITING_SETTLEMENT_APPROVAL = "awaiting_settlement_approval",
+    CHANGED = "changed",
+    PENDING = "pending",
+    PROCESSING = "processing",
+    SETTLED = "settled",
+    REFUSED = "refused"
+}
+
+export enum TransactionType {
+    LOAN = "loan",
+    OTHER = "other",
+}
+
 
 export default Transaction;
 

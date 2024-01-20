@@ -1,5 +1,3 @@
-import transaction from "../transactions/models/Transaction";
-
 export abstract class Notification {
     public description: string;
     public type: NOTIFICATION_TYPE;

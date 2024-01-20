@@ -1,115 +1,52 @@
+import ExchangedGoodAdapter from "./exchangedGood/ExchangedGoodAdapter";
 import ITransaction from './ITransaction';
 import {Model, DataTypes} from 'sequelize';
 import {sequelize} from '../../config/sequelize';
-import {TransactionStatus, TransactionType} from "./Transaction";
+import {TransactionStatus} from "./Transaction";
 import UserAdapter from "../../users/models/UserAdapter";
+import {TransactionType} from "./Transaction";
+import TransactionPartyAdapter from "./transactionParty/TransactionPartyAdapter";
 
 class TransactionAdapter extends Model implements ITransaction {
-    Borrowed_Amount?: number;
-    Borrowed_Currency?: string;
-    BorrowerID!: number;
-    Description!: string;
-    Detail?: string;
-    Image_Of_Item?: string;
-    Initiation_Date?: Date;
-    InitiatorID!: number;
-    Item_Name?: string;
-    LenderID!: number;
-    Payment_MethodID?: number;
-    Proof?: string;
-    Repayment_MethodID?: number;
-    Repayment_Terms?: string;
-    Returned_Amount?: number;
-    Returned_Currency?: string;
-    Status!: TransactionStatus;
-    Target_Date?: Date;
-    TransactionID!: number;
-    Transaction_Date?: Date;
-    Transaction_Rating_Borrower?: number;
-    Transaction_Rating_Borrower_Message?: string;
-    Transaction_Rating_Lender?: number;
-    Transaction_Rating_Lender_Message?: string;
-    Transaction_Returned_Date?: Date;
-    Transaction_Topic_Name?: string;
-    Transaction_Type!: TransactionType;
+    actualSettlementDate?: Date;
+    approvalDate?: Date;
+    initiationDate!: Date;
+    settlementProof!: string;
+    status!: TransactionStatus;
+    targetedSettlementDate!: Date;
+    transactionId!: number;
+    type!: TransactionType;
 }
 
 TransactionAdapter.init(
     {
-        Borrowed_Amount: {
-            type: DataTypes.DECIMAL,
-        },
-        Borrowed_Currency: {
-            type: DataTypes.STRING(3),
-        },
-        Description: {
-            type: DataTypes.TEXT,
-        },
-        Detail: {
-            type: DataTypes.TEXT,
-        },
-        Image_Of_Item: {
-            type: DataTypes.STRING(255),
-        },
-        Item_Name: {
-            type: DataTypes.STRING(255),
-        },
-        Initiation_Date: {
+        actualSettlementDate: {
             type: DataTypes.DATE,
         },
-        Payment_MethodID: {
-            type: DataTypes.INTEGER,
+        approvalDate: {
+            type: DataTypes.DATE,
         },
-        Proof: {
-            type: DataTypes.STRING(255),
+        initiationDate: {
+            type: DataTypes.DATE,
         },
-        Repayment_MethodID: {
-            type: DataTypes.INTEGER,
-        },
-        Repayment_Terms: {
+        settlementProof: {
             type: DataTypes.STRING,
         },
-        Returned_Amount: {
-            type: DataTypes.DECIMAL,
+        status: {
+            type: DataTypes.ENUM("pending", "processing", "settled", "refused"),
         },
-        Returned_Currency: {
-            type: DataTypes.STRING(3),
-        },
-        Status: {
-            type: DataTypes.ENUM('Pending', 'Processing', 'Settled', 'Refused'),
-        },
-        Target_Date: {
+        targetedSettlementDate: {
             type: DataTypes.DATE,
         },
-        TransactionID: {
+        transactionId: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
         },
-        Transaction_Date: {
-            type: DataTypes.DATE,
+        type: {
+            type: DataTypes.ENUM('loan', 'other'),
         },
-        Transaction_Rating_Borrower: {
-            type: DataTypes.INTEGER,
-        },
-        Transaction_Rating_Borrower_Message: {
-            type: DataTypes.TEXT,
-        },
-        Transaction_Rating_Lender: {
-            type: DataTypes.INTEGER,
-        },
-        Transaction_Rating_Lender_Message: {
-            type: DataTypes.TEXT,
-        },
-        Transaction_Returned_Date: {
-            type: DataTypes.DATE,
-        },
-        Transaction_Topic_Name: {
-            type: DataTypes.TEXT,
-        },
-        Transaction_Type: {
-            type: DataTypes.ENUM('Cash', 'Item', 'Other'),
-        },
+
     },
     {
         modelName: 'TransactionAdapter',
@@ -118,6 +55,11 @@ TransactionAdapter.init(
         sequelize
     }
 )
+
+ExchangedGoodAdapter.belongsTo(TransactionAdapter, {foreignKey: 'transactionId', as: 'transaction'});
+TransactionPartyAdapter.belongsTo(TransactionAdapter, {foreignKey: 'transactionId', as: 'transaction'});
+TransactionAdapter.hasOne(ExchangedGoodAdapter, {foreignKey: 'transactionId', as: 'exchangedGood'});
+TransactionAdapter.hasMany(TransactionPartyAdapter, {foreignKey: 'transactionId', as: 'transactionParties'});
 
 
 export default TransactionAdapter;

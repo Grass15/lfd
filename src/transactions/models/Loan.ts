@@ -1,29 +1,41 @@
-import Lender from "../../users/models/Lender";
-import Borrower from "../../users/models/Borrower";
-import User from "../../users/models/User";
+import borrower from "../../users/models/Borrower";
+import lender from "../../users/models/Lender";
 import ITransaction from "./ITransaction";
-import Transaction from "./Transaction"
-
-export type LoanInitiationParams = Pick<Transaction, "borrower" | "exchangedGood" | "initiationDate" | "initiator" | "lender" | "status" | "type" | "target">;
+import Transaction, {TransactionPartyRoles} from "./Transaction"
+import TransactionParty from "./transactionParty/TransactionParty";
 
 class Loan extends Transaction {
-    public borrower!: Borrower;
-    public lender!: Lender;
+    public borrower!: TransactionParty;
+    public initiator!: TransactionParty;
+    public lender!: TransactionParty;
 
     constructor(transaction: ITransaction) {
         super(transaction);
     }
 
-    public setBorrower(borrower: Borrower) {
+    public setBorrower(borrower: TransactionParty) {
         this.borrower = borrower;
+        this.addParty(borrower);
     }
 
-    public setInitiator(initiator: User) {
-        this.initiator = initiator;
+    public setInitiator(initiator: TransactionParty) {
+        if (lender == null || borrower == null) throw new Error();
+        else {
+            this.initiator = initiator;
+            this.parties.forEach(transactionParty => {
+                if (transactionParty.transactionPartyId == initiator.transactionPartyId) {
+                    //transactionParty.role.push(TransactionPartyRoles.INITIATOR);
+                    this.initiator.user.nickname = transactionParty.user.nickname;
+                    return;
+                }
+            })
+        }
+
     }
 
-    public setLender(lender: Lender) {
+    public setLender(lender: TransactionParty) {
         this.lender = lender;
+        this.addParty(lender);
     }
 
 }

@@ -17,8 +17,6 @@ class UsersController extends BaseController {
     @Post("/change-password")
     public async changePassword(@Req() request: Request, @Body() body: any, @Res() response: Response) {
         try {
-            console.log(body);
-            console.log(request.headers);
             const data = await this.authenticate(request);
             const user = await this.service.getUser(data.email);
             await this.service.login(user.Email, body.oldPassword);

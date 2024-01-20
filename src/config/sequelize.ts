@@ -3,34 +3,20 @@ import {Sequelize} from 'sequelize';
 
 dotenv.config();
 
-const dbPassword = process.env.DB_PASSWORD
-
-// const sequelize: Sequelize = new Sequelize({
-//     dialect: 'mysql',
-//     host: 'localhost',
-//     port: 3306,
-//     username: 'root',
-//     password: dbPassword || "root",
-//     database: 'lendafriend',
-// });
+const dbPassword = process.env.DB_PASSWORD;
+const host = process.env.DB_HOST;
+const port: number = parseInt(process.env.DB_PORT as string);
+const username = process.env.DB_USERNAME;
 
 
 const sequelize: Sequelize = new Sequelize({
     dialect: 'mysql',
-    host: 'mysql-158687-0.cloudclusters.net',
-    port: 17312,
-    username: 'admin',
+    host: host,
+    port: port,
+    username: username,
     password: dbPassword,
     database: 'lendafriend',
 });
 
-// const sequelize: Sequelize = new Sequelize({
-//     dialect: 'mysql',
-//     host: 'ec2-34-242-154-118.eu-west-1.compute.amazonaws.com',
-//     port: 3306,
-//     username: '4402307_uomiou',
-//     password: dbPassword,
-//     database: '4402307_uomiou',
-// });
 
 export {sequelize};

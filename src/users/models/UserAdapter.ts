@@ -1,5 +1,5 @@
 import ContactAdapter from "../../contacts/models/ContactAdapter";
-import TransactionAdapter from "../../transactions/models/TransactionAdapter";
+import TransactionPartyAdapter from "../../transactions/models/transactionParty/TransactionPartyAdapter";
 import IUser from "./IUser";
 import {Model, DataTypes} from "sequelize";
 import {sequelize} from "../../config/sequelize";
@@ -11,7 +11,6 @@ class UserAdapter extends Model implements IUser {
     Creation_Date?: Date;
     Email!: string;
     Password_Hash!: string;
-    hasPassword!: boolean;
     Phone_Number?: string;
     Profile_Description?: string;
     Profile_Picture!: string;
@@ -19,6 +18,7 @@ class UserAdapter extends Model implements IUser {
     Social_Credit_Score!: number;
     UserID!: number;
     User_Name!: string;
+    hasPassword!: boolean;
 }
 
 UserAdapter.init(
@@ -76,11 +76,10 @@ UserAdapter.init(
     }
 )
 
-TransactionAdapter.belongsTo(UserAdapter, {foreignKey: 'LenderID', as: 'Lender'});
-TransactionAdapter.belongsTo(UserAdapter, {foreignKey: 'BorrowerID', as: 'Borrower'});
-TransactionAdapter.belongsTo(UserAdapter, {foreignKey: 'InitiatorID', as: 'Initiator'});
 ContactAdapter.belongsTo(UserAdapter, {foreignKey: 'OwnerID', as: 'Owner'});
 ContactAdapter.belongsTo(UserAdapter, {foreignKey: 'Contact_UserID', as: 'OtherPerson'});
+
+TransactionPartyAdapter.belongsTo(UserAdapter, {foreignKey: 'userID', as: 'user'});
 
 
 export default UserAdapter;

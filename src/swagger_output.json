@@ -164,13 +164,13 @@
         ]
       }
     },
-    "/api/transactions/borrower/{transactionId}": {
-      "get": {
-        "operationId": "TransactionsController.getTransactionBorrower",
+    "/api/transactions/change-transaction/{userId}": {
+      "patch": {
+        "operationId": "TransactionsController.changeTransaction",
         "parameters": [
           {
             "in": "path",
-            "name": "transactionId",
+            "name": "userId",
             "required": true,
             "schema": {
               "pattern": "[^\\/#\\?]+?",
@@ -178,6 +178,15 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          },
+          "description": "",
+          "required": false
+        },
         "responses": {
           "200": {
             "content": {
@@ -186,35 +195,7 @@
             "description": "Successful response"
           }
         },
-        "summary": "Get transaction borrower",
-        "tags": [
-          "Transactions"
-        ]
-      }
-    },
-    "/api/transactions/lender/{transactionId}": {
-      "get": {
-        "operationId": "TransactionsController.getTransactionLender",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "transactionId",
-            "required": true,
-            "schema": {
-              "pattern": "[^\\/#\\?]+?",
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {}
-            },
-            "description": "Successful response"
-          }
-        },
-        "summary": "Get transaction lender",
+        "summary": "Change transaction",
         "tags": [
           "Transactions"
         ]
@@ -292,11 +273,11 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Transaction"
+                "$ref": "#/components/schemas/TransactionParty"
               }
             }
           },
-          "description": "Transaction",
+          "description": "TransactionParty",
           "required": false
         },
         "responses": {
@@ -351,6 +332,43 @@
           }
         },
         "summary": "Refuse transaction",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/api/transactions/request-settlement/{transactionId}/{userId}": {
+      "get": {
+        "operationId": "TransactionsController.requestTransaction",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "pattern": "[^\\/#\\?]+?",
+              "type": "number"
+            }
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "pattern": "[^\\/#\\?]+?",
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Request transaction",
         "tags": [
           "Transactions"
         ]
