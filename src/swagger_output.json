@@ -201,6 +201,49 @@
         ]
       }
     },
+    "/api/transactions/confirm-settlement/{transactionId}": {
+      "patch": {
+        "operationId": "TransactionsController.confirmSettlement",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "pattern": "[^\\/#\\?]+?",
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "userId": {
+                    "type": "number"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Confirm settlement",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
     "/api/transactions/{userId}": {
       "get": {
         "operationId": "TransactionsController.getTransactions",
@@ -337,9 +380,52 @@
         ]
       }
     },
+    "/api/transactions/reject-settlement/{transactionId}": {
+      "patch": {
+        "operationId": "TransactionsController.rejectSettlement",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "pattern": "[^\\/#\\?]+?",
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "userId": {
+                    "type": "number"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Reject settlement",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
     "/api/transactions/request-settlement/{transactionId}/{userId}": {
       "get": {
-        "operationId": "TransactionsController.requestTransaction",
+        "operationId": "TransactionsController.requestSettlement",
         "parameters": [
           {
             "in": "path",
@@ -368,7 +454,7 @@
             "description": "Successful response"
           }
         },
-        "summary": "Request transaction",
+        "summary": "Request settlement",
         "tags": [
           "Transactions"
         ]

@@ -33,7 +33,7 @@ TransactionAdapter.init(
             type: DataTypes.STRING,
         },
         status: {
-            type: DataTypes.ENUM("pending", "processing", "settled", "refused"),
+            type: DataTypes.ENUM("awaiting_settlement_approval", "changed", "pending", "processing", "settled", "refused"),
         },
         targetedSettlementDate: {
             type: DataTypes.DATE,
