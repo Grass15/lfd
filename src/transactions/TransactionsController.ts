@@ -92,7 +92,7 @@ class TransactionsController extends BaseController {
             transactionsData.map(async (transactionData) => {
                 const transactionParties = await this.service.getTransactionParties(transactionData.transactionId);
                 const exchangedGood = await this.service.getTransactionExchangedGood(transactionData.transactionId) as ExchangedGoodAdapter;
-                return await this.adaptTransaction(transactionData, transactionParties, exchangedGood);
+                return await this.adaptTransaction(transactionData, transactionParties, exchangedGood, userId);
             })
         );
         transactions.push(...adaptedTransactions);
