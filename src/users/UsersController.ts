@@ -45,6 +45,7 @@ class UsersController extends BaseController {
                 const {userEmail, userName} = await this.googleAuthMiddleware(request);
                 console.log("user email: ", userEmail, " and user name: ", userName);
                 const user = await this.service.getOrCreateUser(userEmail, userName);
+                await this.contactsService.setUserPendingContactsToActive(userEmail);
                 return response.status(201).json({"status": 1, message: 'Get User Success', user});
             } else if (loginMethod == "facebook") {
                 const {userEmail, userName} = await this.facebookAuthMiddleware(request);
@@ -137,7 +138,6 @@ class UsersController extends BaseController {
             await this.service.verifyEmail(body.code, body.email);
             return response.status(201).json({"status": 1, message: 'Email verified successfully'});
         } catch (error) {
-            console.log("Just a test")
             return response.status(400).json({"status": 0, error: "code incorrect"});
         }
     }
