@@ -1,5 +1,6 @@
 import User from "../../users/models/User";
 import IContact from "./IContact";
+import IPendingContactAdapter from "./IPendingContactAdapter";
 
 class Contact {
     createdAt!: Date;
@@ -7,8 +8,9 @@ class Contact {
     readonly id?: number;
     otherPerson!: User;
     owner!: User;
+    status!: ContactStatus;
 
-    constructor(contact: IContact) {
+    constructor(contact: IContact | IPendingContactAdapter) {
         this.description = contact?.Contact_Description;
         this.id = contact?.ContactID;
         this.createdAt = contact?.Creation_Date;
@@ -26,6 +28,11 @@ class Contact {
 }
 
 export default Contact;
+
+export enum ContactStatus {
+    PENDING = "pending",
+    ACTIVE = "active",
+}
 
 export type AddContact = {
     createdAt: Date;

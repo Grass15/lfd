@@ -7,6 +7,7 @@ import ERRORS from "../utils/ERRORS";
 import Contact, {AddContact} from "./models/Contact";
 import contactAdapter from "./models/ContactAdapter";
 import ContactAdapter from "./models/ContactAdapter";
+import PendingContactAdapter from "./models/PendingContactAdapter";
 
 class ContactsService {
     emailsService: EmailsService;
@@ -19,25 +20,30 @@ class ContactsService {
 
     public async addContact(contact: AddContact) {
         const otherPerson = await this.usersService.getByEmail(contact.otherPersonEmail);
+        if (await this.doesContactExist(contact.owner.id as number, otherPerson?.UserID, contact.otherPersonEmail)) {
+            throw new Error(ERRORS.CONTACT_ALREADY_EXISTS);
+        }
         if (otherPerson != null) {
-            if (await this.doesContactExist(contact.owner.id, otherPerson.UserID)) {
-                throw new Error(ERRORS.CONTACT_ALREADY_EXISTS);
-            } else {
-                console.log(contact.owner.nickname, contact.otherPersonEmail)
-                console.log(contact)
-                const newContact = await ContactAdapter.create(
-                    {
-                        Contact_Description: contact.description,
-                        Contact_UserID: otherPerson.UserID,
-                        Creation_Date: contact.createdAt,
-                        OwnerID: contact.owner.id
-                    },
-                );
-                return await this.getContact(newContact.ContactID)
-            }
+            const newContact = await ContactAdapter.create(
+                {
+                    Contact_Description: contact.description,
+                    Contact_UserID: otherPerson.UserID,
+                    Creation_Date: contact.createdAt,
+                    OwnerID: contact.owner.id
+                },
+            );
+            return await this.getContact(newContact.ContactID);
         } else {
-            console.log(contact.owner.nickname, contact.otherPersonEmail)
-            this.emailsService.sendInviteEmail(contact.owner.nickname, contact.otherPersonEmail);
+            const newContact = await PendingContactAdapter.create(
+                {
+                    Contact_Description: contact.description,
+                    Contact_User_Email: contact.otherPersonEmail,
+                    Creation_Date: contact.createdAt,
+                    OwnerID: contact.owner.id
+                },
+            );
+            this.emailsService.sendInviteEmail(contact.owner.nickname as string, contact.otherPersonEmail);
+            return newContact;
         }
     }
 
@@ -96,13 +102,20 @@ class ContactsService {
                 include: [
                     {
                         model: UserAdapter,
-                        as: 'Owner',
-                    },
-                    {
-                        model: UserAdapter,
                         as: 'OtherPerson',
                     },
                 ]
+            }
+        );
+    }
+
+
+    public async getPendingContacts(ownerId: number): Promise<PendingContactAdapter[]> {
+        return await PendingContactAdapter.findAll(
+            {
+                where: {
+                    OwnerID: ownerId,
+                }
             }
         );
     }
@@ -123,17 +136,48 @@ class ContactsService {
         );
     }
 
-    private async doesContactExist(ownerId: number, otherPersonId: number) {
+    //User refer to the one that has been added as pending contact and just created his account
+    public async setUserPendingContactsToActive(userEmail: string) {
+        const user = await this.usersService.getByEmail(userEmail) as IUser;
+        const pendingContacts = await PendingContactAdapter.findAll({
+            where: {
+                Contact_User_Email: userEmail
+            }
+        });
+        pendingContacts.map(async pendingContact => {
+            await ContactAdapter.create(
+                {
+                    Contact_Description: pendingContact.Contact_Description,
+                    Contact_UserID: user.UserID,
+                    Creation_Date: pendingContact.Creation_Date,
+                    OwnerID: pendingContact.OwnerID
+                },
+            );
+            await pendingContact.destroy();
+        });
+
+    }
+
+    private async doesContactExist(ownerId: number, otherPersonId?: number, otherPersonEmail?: string) {
         const contact = await ContactAdapter.findOne(
             {
                 where: {
                     OwnerID: ownerId,
-                    Contact_UserID: otherPersonId,
+                    Contact_UserID: otherPersonId || 0,
                 },
 
             }
         );
-        return contact != null;
+        const pendingContact = await PendingContactAdapter.findOne(
+            {
+                where: {
+                    OwnerID: ownerId,
+                    Contact_User_Email: otherPersonEmail,
+                },
+
+            }
+        );
+        return contact != null || pendingContact != null;
     }
 }
 

@@ -115,7 +115,7 @@ class TransactionsController extends BaseController {
     }
 
     @Patch("/rate-transaction/:userId")
-    public async rateTransaction(@Body() transaction: TransactionParty, @Param('userId') userId: number) {
+    public async rateTransaction(@Body() transaction: any, @Param('userId') userId: number) {
         await this.service.rateTransactionParty(transaction, userId);
         return transaction;
     }

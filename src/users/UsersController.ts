@@ -1,5 +1,6 @@
 import {Request, Response, NextFunction} from "express";
 import {JsonController, Body, Post, Req, Res} from "routing-controllers";
+import ContactsService from "../contacts/ContactsService";
 import BaseController from "../utils/BaseController";
 import IUser from "./models/IUser";
 import User, {LoginResponse} from "./models/User";
@@ -7,11 +8,13 @@ import UsersService from "./UsersService";
 
 @JsonController("/api/users")
 class UsersController extends BaseController {
+    contactsService: ContactsService;
     service: UsersService;
 
     constructor() {
         super();
         this.service = new UsersService();
+        this.contactsService = new ContactsService();
     }
 
     @Post("/change-password")
@@ -80,6 +83,7 @@ class UsersController extends BaseController {
             console.log(body)
             const userData: IUser | null = await this.service.register(body.email, body.nickname, body.password);
             if (userData) {
+                await this.contactsService.setUserPendingContactsToActive(userData.Email)
                 return response.status(201)
                     .json({
                         "status": 1,

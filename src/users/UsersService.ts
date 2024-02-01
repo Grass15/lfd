@@ -1,23 +1,20 @@
 import bcrypt from 'bcrypt';
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import EmailsService from "../emails/EmailsService";
 import ERRORS from "../utils/ERRORS";
 import IUser from "./models/IUser";
 import {AccountStatus, LoginResponse} from "./models/User";
 import UserAdapter from "./models/UserAdapter";
-import EmailsService from "../emails/EmailsService";
 
 dotenv.config();
 
 class UsersService {
-
     emailsService: EmailsService;
-
     verificationCodes: [email: string, code: number][] = [];
 
     constructor() {
         this.emailsService = new EmailsService();
-
     }
 
     public async getByEmail(email: string): Promise<IUser | null> {
@@ -167,7 +164,6 @@ class UsersService {
                 hasPassword: hasPassword,
                 Password_Hash: hasPassword ? await this.hashPassword(password || "") : undefined,
             };
-
             return await UserAdapter.create(userObject);
         } catch (error) {
             console.error("Error creating user:", error);

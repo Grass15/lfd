@@ -6,27 +6,28 @@ class User {
     country?: string;
     createdAt?: Date;
     description?: string;
-    readonly email: string;
+    email: string;
+    hasPassword: boolean;
     readonly id: number;
     nickname!: string;
-    hasPassword: boolean;
     phoneNumber?: string;
     picture: string;
     trustScore: number;
 
-    constructor(user: IUser) {
-        this.accountStatus = user.Account_Status;
-        this.address = user.Address;
-        this.createdAt = user.Creation_Date;
-        this.country = user.Country;
-        this.email = user.Email;
-        this.id = user.UserID;
-        this.nickname = user.User_Name;
-        this.hasPassword = user.hasPassword;
-        this.phoneNumber = user.Phone_Number;
-        this.picture = user.Profile_Picture;
-        this.trustScore = user.Social_Credit_Score;
+    constructor(user: IUser | undefined) {
+        this.accountStatus = user?.Account_Status as string;
+        this.address = user?.Address;
+        this.createdAt = user?.Creation_Date;
+        this.country = user?.Country;
+        this.email = user?.Email as string;
+        this.id = user?.UserID as number;
+        this.nickname = user?.User_Name as string;
+        this.hasPassword = user?.hasPassword as boolean;
+        this.phoneNumber = user?.Phone_Number;
+        this.picture = user?.Profile_Picture as string;
+        this.trustScore = user?.Social_Credit_Score as number;
     }
+
 }
 
 export interface Rating {

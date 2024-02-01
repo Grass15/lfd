@@ -1,4 +1,5 @@
 import ContactAdapter from "../../contacts/models/ContactAdapter";
+import PendingContactAdapter from "../../contacts/models/PendingContactAdapter";
 import TransactionPartyAdapter from "../../transactions/models/transactionParty/TransactionPartyAdapter";
 import IUser from "./IUser";
 import {Model, DataTypes} from "sequelize";
@@ -78,6 +79,7 @@ UserAdapter.init(
 
 ContactAdapter.belongsTo(UserAdapter, {foreignKey: 'OwnerID', as: 'Owner'});
 ContactAdapter.belongsTo(UserAdapter, {foreignKey: 'Contact_UserID', as: 'OtherPerson'});
+PendingContactAdapter.belongsTo(UserAdapter, {foreignKey: 'OwnerID', as: 'Owner'});
 
 TransactionPartyAdapter.belongsTo(UserAdapter, {foreignKey: 'userID', as: 'user'});
 
