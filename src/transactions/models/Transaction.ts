@@ -18,7 +18,7 @@ class Transaction {
         this.approvalDate = transaction.approvalDate;
         this.id = transaction.transactionId;
         this.initiationDate = transaction.initiationDate;
-        this.status = transaction.status;
+        this.status = transaction.status || TransactionStatus.PENDING;
         this.target = transaction.targetedSettlementDate;
         this.type = transaction.type;
     }
@@ -53,6 +53,7 @@ export enum TransactionPartyRoles {
     LENDER = "lender",
     RECEIVER = "receiver",
     SENDER = "sender",
+    WITNESS = "witness",
 }
 
 export enum TransactionStatus {

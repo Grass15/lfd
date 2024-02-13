@@ -9,6 +9,7 @@ class TransactionPartyAdapter extends Model implements ITransactionParty {
     transactionId!: number;
     transactionPartyId!: number;
     userId!: number;
+    approved!: boolean;
 }
 
 TransactionPartyAdapter.init(
@@ -26,6 +27,10 @@ TransactionPartyAdapter.init(
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
+        },
+        approved: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
         },
     },
     {

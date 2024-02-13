@@ -8,6 +8,7 @@ class Loan extends Transaction {
     public borrower!: TransactionParty;
     public initiator!: TransactionParty;
     public lender!: TransactionParty;
+    public witness: TransactionParty[] = [];
 
     constructor(transaction: ITransaction) {
         super(transaction);
@@ -36,6 +37,14 @@ class Loan extends Transaction {
     public setLender(lender: TransactionParty) {
         this.lender = lender;
         this.addParty(lender);
+    }
+
+    public setWitness(witness: TransactionParty){
+        console.log("setWitness: ",witness)
+        this.witness.push(witness);
+        this.addParty(witness);
+        // console.log("all data witness", this.witness)
+        // console.log("all data lender", this.lender)
     }
 
 }

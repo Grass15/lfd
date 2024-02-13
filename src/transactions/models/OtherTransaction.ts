@@ -5,6 +5,7 @@ import TransactionParty from "./transactionParty/TransactionParty";
 class OtherTransaction extends Transaction {
     public receiver!: TransactionParty;
     public sender!: TransactionParty;
+    public witness: TransactionParty[] = [];
 
     constructor(transaction: ITransaction) {
         super(transaction);
@@ -18,6 +19,14 @@ class OtherTransaction extends Transaction {
     public setSender(sender: TransactionParty) {
         this.sender = sender;
         this.addParty(sender);
+    }
+    
+    public setWitness(witness: TransactionParty){
+        console.log("setWitness: ",witness)
+        this.witness.push(witness);
+        this.addParty(witness);
+        // console.log("all data witness", this.witness)
+        // console.log("all data lender", this.lender)
     }
 }
 

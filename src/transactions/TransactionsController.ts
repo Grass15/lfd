@@ -8,14 +8,18 @@ import {NOTIFICATION_TYPE, TransactionNotification} from "../sockets/Notificatio
 import {sendNotification} from "../sockets/socketIOHandler";
 import IUser from "../users/models/IUser";
 import User from "../users/models/User";
+import UsersService from "../users/UsersService";
 import BaseController from "../utils/BaseController";
-import {Cash, Item, OtherExchangedGood} from "./models/exchangedGood/ExchangedGood";
+import {Cash, ExchangedGood, Item, OtherExchangedGood} from "./models/exchangedGood/ExchangedGood";
 import ExchangedGoodAdapter from "./models/exchangedGood/ExchangedGoodAdapter";
 import {ExchangedGoodType} from "./models/exchangedGood/IExchangedGood";
 import Loan from "./models/Loan";
 import OtherTransaction from "./models/OtherTransaction";
+import pendingTransactionAdapter from "./models/PendingTransactionAdapter";
+import PendingTransactionAdapter from "./models/PendingTransactionAdapter";
 import Transaction, {TransactionPartyRoles, TransactionStatus, TransactionType} from "./models/Transaction"
 import TransactionAdapter from "./models/TransactionAdapter";
+import PendingTransactionPartyAdapter from "./models/transactionParty/PendingTransactionPartyAdapter";
 import TransactionParty from "./models/transactionParty/TransactionParty";
 import TransactionPartyAdapter from "./models/transactionParty/TransactionPartyAdapter";
 import TransactionsService from "./TransactionsService";
@@ -25,12 +29,14 @@ class TransactionsController extends BaseController {
     contactsService: ContactsService
     emailsService: EmailsService;
     service: TransactionsService;
+    usersService: UsersService;
 
     constructor() {
         super();
         this.service = new TransactionsService();
         this.contactsService = new ContactsService();
         this.emailsService = new EmailsService();
+        this.usersService = new UsersService();
     }
 
     @Put("/approve-transaction/:transactionId")
@@ -62,6 +68,23 @@ class TransactionsController extends BaseController {
         // };
         return transaction;
     }
+    @Put("/approve-witness-transaction/:transactionId")
+    public async approveWitnessTransaction(@BodyParam("approvalDate") approvalDate: Date, @BodyParam("userId") userId: number, @Param('transactionId') transactionId: number) {
+        // Add logic to check if user has right to do this
+        console.log("userId: ",userId,"  transaction Id:",transactionId)
+        await this.service.approveWitnessTransaction(approvalDate, userId,transactionId);
+        const transaction: Transaction = await this.getTransactionById(transactionId);
+        return transaction;
+    }
+    // @Get("/borrower/:transactionId")
+    // public async getTransactionBorrower(@Param('transactionId') transactionId: number) {
+    //     const transaction = await this.service.getTransactionBorrower(transactionId);
+    //     let borrower: Borrower;
+    //     if (transaction && transaction.get('Borrower')) {
+    //         borrower = new Borrower(transaction.get('Borrower') as IUser, transaction.Transaction_Rating_Borrower, transaction.Transaction_Rating_Borrower_Message)
+    //         return borrower;
+    //     } else return null;
+    // }
 
     @Patch("/change-transaction/:userId")
     public async changeTransaction(@Body() transaction: any, @Param('userId') userId: number) {
@@ -88,6 +111,8 @@ class TransactionsController extends BaseController {
     public async getTransactions(@Param('userId') userId: number) {
         const transactions: Transaction[] = [];
         const transactionsData = await this.service.getUserTransactions(userId);
+        const user = await this.usersService.getById(userId) as IUser;
+        const pendingTransactionsData = await this.service.getUserPendingTransactions(user.Email);
         const adaptedTransactions = await Promise.all(
             transactionsData.map(async (transactionData) => {
                 const transactionParties = await this.service.getTransactionParties(transactionData.transactionId);
@@ -95,14 +120,25 @@ class TransactionsController extends BaseController {
                 return await this.adaptTransaction(transactionData, transactionParties, exchangedGood, userId);
             })
         );
+        const adaptedPendingTransactions = await Promise.all(
+            pendingTransactionsData.map(async (transactionData) => {
+                return await this.getPendingTransactionById(transactionData, userId);
+            })
+        );
         transactions.push(...adaptedTransactions);
+        transactions.push(...adaptedPendingTransactions);
         return transactions;
     }
 
     @Post("/initiate-transaction")
     public async initiateTransaction(@Body() transaction: any) {
-        const newTransactionData = await this.service.initiateTransaction(transaction) as TransactionAdapter;
-        const newTransaction = await this.getTransactionById(newTransactionData.transactionId);
+        const newTransactionData = await this.service.initiateTransaction(transaction);
+        let newTransaction;
+        if (newTransactionData instanceof TransactionAdapter) {
+            newTransaction = await this.getTransactionById(newTransactionData.transactionId);
+        } else {
+            newTransaction = await this.getPendingTransactionById(newTransactionData);
+        }
         // const receiver = this.getTransactionRequestReceiver(newTransaction);
         // const initiatorNameInContact = await this.contactsService.getContactDescription(receiver.id, transaction.initiator.id);
         // this.sendTransactionNotification(
@@ -196,20 +232,30 @@ class TransactionsController extends BaseController {
     private async getTransactionById(transactionId: number, userId?: number) {
         const transactionData = await this.service.getTransactionById(transactionId) as TransactionAdapter;
         const transactionParties = await this.service.getTransactionParties(transactionId);
+        // console.log("transactionData:",transactionData)
+        console.log("transactionParties*********************************:",transactionParties)
         const exchangedGood = await this.service.getTransactionExchangedGood(transactionId) as ExchangedGoodAdapter;
         return this.adaptTransaction(transactionData, transactionParties, exchangedGood, userId)
     }
 
-    private async adaptTransaction(transactionData: TransactionAdapter, transactionPartiesData: TransactionPartyAdapter[], exchangedGoodData: ExchangedGoodAdapter, userId?: number) {
-        let transaction;
-        const transactionParties = await Promise.all(
-            transactionPartiesData.map(async (trxP) => {
-                const party = new TransactionParty(trxP);
-                const user = await trxP.get('user') as IUser;
-                party.user = new User(user);
-                return party;
-            })
+    private async getPendingTransactionById(pendingTransactionData: PendingTransactionAdapter, userId?: number) {
+        pendingTransactionData = await this.service.getPendingTransactionById(pendingTransactionData.id) as PendingTransactionAdapter;
+        const pendingTransactionPartiesData = await pendingTransactionData.get('pendingTransactionParties');
+        const exchangedGood = await pendingTransactionData.get('exchangedGood');
+        const pendingTransactionParties = await this.adaptTransactionParties(pendingTransactionPartiesData as TransactionPartyAdapter[])
+        pendingTransactionParties.forEach(trxParty => {
+            trxParty.user = new User(undefined);
+            trxParty.user.email = (pendingTransactionPartiesData as PendingTransactionPartyAdapter[]).filter(party => party.id == trxParty.transactionPartyId)[0].email;
+        })
+        return await this.getTransactionClassObject(
+            pendingTransactionParties,
+            this.adaptExchangedGood(exchangedGood as ExchangedGoodAdapter),
+            pendingTransactionData as any,
+            userId
         );
+    }
+
+    private adaptExchangedGood(exchangedGoodData: ExchangedGoodAdapter) {
         let exchangedGood;
         switch (exchangedGoodData.type) {
             case ExchangedGoodType.CASH:
@@ -222,8 +268,22 @@ class TransactionsController extends BaseController {
                 exchangedGood = new OtherExchangedGood(exchangedGoodData);
                 break;
         }
+        return exchangedGood;
+    }
 
+    private async adaptTransactionParties(transactionPartiesData: TransactionPartyAdapter[]) {
+        return await Promise.all(
+            transactionPartiesData.map(async (trxP) => {
+                const party = new TransactionParty(trxP);
+                const user = await trxP.get('user') as IUser;
+                party.user = new User(user);
+                return party;
+            })
+        );
+    }
 
+    private async getTransactionClassObject(transactionParties: TransactionParty[], exchangedGood: ExchangedGood, transactionData: TransactionAdapter, userId?: number) {
+        let transaction;
         switch (transactionData.type) {
             case TransactionType.LOAN:
                 transaction = new Loan(transactionData);
@@ -232,10 +292,14 @@ class TransactionsController extends BaseController {
                 const initiator = transactionParties.filter(party => party.role.length > 1 && party.role.includes(TransactionPartyRoles.INITIATOR))[0];
                 if (!userId) userId = initiator.user.id;
                 if (userId == lender.user.id) {
-                    const borrowerNameInLenderContact = await this.contactsService.getContactDescription(lender.user.id, borrower.user.id);
+                    const borrowerNameInLenderContact = borrower.user.id ?
+                        await this.contactsService.getContactDescription(lender.user.id, borrower.user.id) :
+                        await this.contactsService.getPendingContactDescription(lender.user.id, borrower.user.email);
                     borrower.user.nickname = borrowerNameInLenderContact || borrower.user.email;
                 } else {
-                    const lenderNameInBorrowerContact = await this.contactsService.getContactDescription(borrower.user.id, lender.user.id);
+                    const lenderNameInBorrowerContact = lender.user.id ?
+                        await this.contactsService.getContactDescription(borrower.user.id, lender.user.id) :
+                        await this.contactsService.getPendingContactDescription(borrower.user.id, lender.user.email);
                     lender.user.nickname = lenderNameInBorrowerContact || lender.user.email;
                 }
                 transaction.setBorrower(borrower);
@@ -248,18 +312,35 @@ class TransactionsController extends BaseController {
                 const receiver = transactionParties.filter(party => party.role[0] == TransactionPartyRoles.RECEIVER)[0];
                 if (!userId) userId = sender.user.id;
                 if (userId == receiver.user.id) {
-                    const senderNameInReceiverContact = await this.contactsService.getContactDescription(receiver.user.id, sender.user.id);
+                    const senderNameInReceiverContact = sender.user.id ?
+                        await this.contactsService.getContactDescription(receiver.user.id, sender.user.id) :
+                        await this.contactsService.getPendingContactDescription(receiver.user.id, sender.user.email);
                     sender.user.nickname = senderNameInReceiverContact || sender.user.email;
                 } else {
-                    const receiverNameInSenderContact = await this.contactsService.getContactDescription(sender.user.id, receiver.user.id);
+                    const receiverNameInSenderContact = receiver.user.id ?
+                        await this.contactsService.getContactDescription(sender.user.id, receiver.user.id) :
+                        await this.contactsService.getPendingContactDescription(sender.user.id, receiver.user.email);
                     receiver.user.nickname = receiverNameInSenderContact || receiver.user.email;
                 }
                 transaction.setSender(sender);
                 transaction.setReceiver(receiver);
                 break;
         }
+        const witness = transactionParties.filter(party => party.role.includes(TransactionPartyRoles.WITNESS));
+        console.log("witness:",witness);
+        witness.forEach((user) =>{
+            transaction!.setWitness(user)
+        })
         transaction.exchangedGood = exchangedGood;
         return transaction;
+    }
+
+    private async adaptTransaction(transactionData: TransactionAdapter, transactionPartiesData: TransactionPartyAdapter[], exchangedGoodData: ExchangedGoodAdapter, userId?: number) {
+        console.log("transactionPartiesData here 1:",transactionPartiesData)
+        const transactionParties = await this.adaptTransactionParties(transactionPartiesData);
+        console.log("transactionParties: here 2:",transactionParties)
+        const exchangedGood = this.adaptExchangedGood(exchangedGoodData);
+        return await this.getTransactionClassObject(transactionParties, exchangedGood, transactionData, userId);
     }
 
     private sendTransactionNotification(transactionId: number, receiverId: number, description: string, notificationType: NOTIFICATION_TYPE) {

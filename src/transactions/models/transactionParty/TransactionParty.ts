@@ -1,5 +1,8 @@
 import User from "../../../users/models/User";
-import {TransactionPartyRoles} from "../Transaction";
+import IPendingTransactionAdapter from "../IPendingTransactionAdapter";
+import ITransaction from "../ITransaction";
+import transaction, {TransactionPartyRoles} from "../Transaction";
+import IPendingTransactionPartyAdapter from "./IPendingTransactionPartyAdapter";
 import ITransactionParty from "./ITransactionParty";
 
 class TransactionParty {
@@ -7,16 +10,18 @@ class TransactionParty {
     role!: TransactionPartyRoles[];
     transactionId: number;
     transactionPartyId: number;
+    approved!: boolean;
     user!: User;
 
-    constructor(transactionParty: ITransactionParty) {
+    constructor(transactionParty: ITransactionParty | any) {
         this.rating = {
             message: transactionParty.ratingText,
             value: transactionParty.ratingValue,
         };
         this.setRole(transactionParty.role);
-        this.transactionId = transactionParty.transactionId;
-        this.transactionPartyId = transactionParty.transactionPartyId;
+        this.transactionId = transactionParty.transactionId || transactionParty.pendingTransactionId;
+        this.transactionPartyId = transactionParty.transactionPartyId || transactionParty.id;
+        this.approved = transactionParty.approved;
     }
 
     public setRole(roles: string) {

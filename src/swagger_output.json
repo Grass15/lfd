@@ -164,6 +164,52 @@
         ]
       }
     },
+    "/api/transactions/approve-witness-transaction/{transactionId}": {
+      "put": {
+        "operationId": "TransactionsController.approveWitnessTransaction",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "pattern": "[^\\/#\\?]+?",
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "approvalDate": {
+                    "$ref": "#/components/schemas/Date"
+                  },
+                  "userId": {
+                    "type": "number"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Approve witness transaction",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
     "/api/transactions/change-transaction/{userId}": {
       "patch": {
         "operationId": "TransactionsController.changeTransaction",

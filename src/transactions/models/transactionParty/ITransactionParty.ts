@@ -5,6 +5,7 @@ interface ITransactionParty {
     transactionId: number;
     transactionPartyId: number;
     userId: number;
+    approved: boolean;
 }
 
 export default ITransactionParty;

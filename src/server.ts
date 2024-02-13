@@ -1,13 +1,13 @@
-import express, {Express, Request, Response, Router} from "express";
+import express, { Express, Request, Response, Router } from "express";
 import http from "http";
 import path from "path";
-import {createExpressServer} from "routing-controllers";
-import {Server as SocketIOServer, Socket} from "socket.io";
+import { createExpressServer } from "routing-controllers";
+import { Server as SocketIOServer, Socket } from "socket.io";
 import dotenv from "dotenv";
 import * as bodyParser from "body-parser";
-import {sequelize} from "./config/sequelize";
+import { sequelize } from "./config/sequelize";
 import ContactsController from "./contacts/ContactsController";
-import {routes} from "./routes";
+import { routes } from "./routes";
 import swaggerUi from "swagger-ui-express";
 import swaggerOutput from "./swagger_output.json";
 import TransactionsController from "./transactions/TransactionsController";
@@ -19,34 +19,34 @@ import BaseController from "./utils/BaseController";
 dotenv.config();
 
 const app: Express = createExpressServer({
-    controllers: [
-        BaseController,
-        ContactsController,
-        TransactionsController,
-        UsersController,
-    ], // we specify controllers we want to use
+  controllers: [
+    BaseController,
+    ContactsController,
+    TransactionsController,
+    UsersController,
+  ], // we specify controllers we want to use
 });
 export const server: http.Server = http.createServer(app);
 export const socketServer: SocketIOServer = new SocketIOServer(server);
 
 const dbConnection = async () => {
-    try {
-        await sequelize.authenticate();
-        console.log("Connection has been established successfully.");
-    } catch (error) {
-        console.error("Unable to connect to the database:", error);
-    }
+  try {
+    await sequelize.authenticate();
+    console.log("Connection has been established successfully.");
+  } catch (error) {
+    console.error("Unable to connect to the database:", error);
+  }
 };
 let isTableCreated: string;
 dbConnection().then(async () => {
-    try {
-        await sequelize.sync();
-        console.log("Tables created successfully");
-        isTableCreated = "Tables created successfully";
-    } catch (error) {
-        console.error("Error creating tables:", error);
-        isTableCreated = "Tables not created" + JSON.stringify(error);
-    }
+  try {
+    await sequelize.sync();
+    console.log("Tables created successfully");
+    isTableCreated = "Tables created successfully";
+  } catch (error) {
+    console.error("Error creating tables:", error);
+    isTableCreated = "Tables not created" + JSON.stringify(error);
+  }
 });
 
 const port = process.env.PORT || 8080;
@@ -55,9 +55,9 @@ app.use(bodyParser.json());
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerOutput));
 app.use(express.static(path.join(__dirname, "public")));
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 server.listen(port, () => {
-    console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
+  console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
 });

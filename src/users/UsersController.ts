@@ -1,6 +1,7 @@
 import {Request, Response, NextFunction} from "express";
 import {JsonController, Body, Post, Req, Res} from "routing-controllers";
 import ContactsService from "../contacts/ContactsService";
+import TransactionsService from "../transactions/TransactionsService";
 import BaseController from "../utils/BaseController";
 import IUser from "./models/IUser";
 import User, {LoginResponse} from "./models/User";
@@ -10,11 +11,13 @@ import UsersService from "./UsersService";
 class UsersController extends BaseController {
     contactsService: ContactsService;
     service: UsersService;
+    transactionsService: TransactionsService;
 
     constructor() {
         super();
         this.service = new UsersService();
         this.contactsService = new ContactsService();
+        this.transactionsService = new TransactionsService();
     }
 
     @Post("/change-password")
@@ -46,6 +49,7 @@ class UsersController extends BaseController {
                 console.log("user email: ", userEmail, " and user name: ", userName);
                 const user = await this.service.getOrCreateUser(userEmail, userName);
                 await this.contactsService.setUserPendingContactsToActive(userEmail);
+                await this.transactionsService.setUserPendingTransactionsToActive(userEmail, user?.UserID as number);
                 return response.status(201).json({"status": 1, message: 'Get User Success', user});
             } else if (loginMethod == "facebook") {
                 const {userEmail, userName} = await this.facebookAuthMiddleware(request);
@@ -84,7 +88,8 @@ class UsersController extends BaseController {
             console.log(body)
             const userData: IUser | null = await this.service.register(body.email, body.nickname, body.password);
             if (userData) {
-                await this.contactsService.setUserPendingContactsToActive(userData.Email)
+                await this.contactsService.setUserPendingContactsToActive(userData.Email);
+                await this.transactionsService.setUserPendingTransactionsToActive(userData.Email, userData.UserID);
                 return response.status(201)
                     .json({
                         "status": 1,

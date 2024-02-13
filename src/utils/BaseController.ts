@@ -145,7 +145,7 @@ abstract class BaseController {
             throw new Error("Could not authenticate user!");
         }
     };
-
+ 
 
 }
 

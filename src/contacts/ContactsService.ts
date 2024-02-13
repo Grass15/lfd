@@ -109,6 +109,25 @@ class ContactsService {
         );
     }
 
+    public async getPendingContactByUsersIds(ownerId: number, otherPersonEmail: string) {
+        return await PendingContactAdapter.findOne(
+            {
+                where: {
+                    OwnerID: ownerId,
+                    Contact_User_Email: otherPersonEmail,
+                },
+            }
+        );
+    }
+
+    public async getPendingContactDescription(ownerId: number, otherPersonEmail: string) {
+        let contact;
+        if (ownerId != null) contact = await this.getPendingContactByUsersIds(ownerId, otherPersonEmail) as PendingContactAdapter;
+        if (contact)
+            return contact?.Contact_Description;
+        else
+            return "";
+    }
 
     public async getPendingContacts(ownerId: number): Promise<PendingContactAdapter[]> {
         return await PendingContactAdapter.findAll(
