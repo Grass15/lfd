@@ -57,6 +57,7 @@ export enum TransactionPartyRoles {
 }
 
 export enum TransactionStatus {
+    AWAITING_CHANGE_APPROVAL = "awaiting_change_approval",
     AWAITING_SETTLEMENT_APPROVAL = "awaiting_settlement_approval",
     CHANGED = "changed",
     PENDING = "pending",

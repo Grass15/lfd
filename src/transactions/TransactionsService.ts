@@ -60,13 +60,12 @@ class TransactionsService {
                         transactionId: transactionId
                     }
                 });
-        }
-        else{
+        } else {
             throw new Error("Not all witnesses have approved the transaction");
         }
     }
 
-    public async approveWitnessTransaction(approvalDate: Date, userId:number,transactionId: number) {
+    public async approveWitnessTransaction(approvalDate: Date, userId: number, transactionId: number) {
         return await TransactionPartyAdapter.update(
             {
                 // approvalDate: approvalDate,
@@ -81,27 +80,13 @@ class TransactionsService {
     }
 
     public async changeTransactionDetails(transaction: Transaction) {
-        await ExchangedGoodAdapter.update(
-            transaction.exchangedGood as {}
-            ,
-            {
-                where: {
-                    transactionId: transaction.id
-                }
-            }
-        );
-        return await TransactionAdapter.update(
-            {
-                targetedSettlementDate: transaction.target,
-                status: TransactionStatus.CHANGED
-            },
-            {
-                where: {
-                    transactionId: transaction.id
-                }
-            }
-        );
-
+        const previousTransaction = await this.getTransactionById(transaction.id as number) as TransactionAdapter;
+        await previousTransaction.update({
+            previousTargetedSettlementDate: previousTransaction?.targetedSettlementDate,
+            targetedSettlementDate: transaction.target,
+            status: TransactionStatus.AWAITING_CHANGE_APPROVAL
+        })
+        return previousTransaction;
     }
 
     public async getPendingTransactionById(pendingTransactionId: number) {
@@ -236,11 +221,10 @@ class TransactionsService {
         return await TransactionPartyAdapter.update(
             {
                 ratingText: ratedParty.rating?.message,
-                ratingValue: ratedParty.rating?.value
-            },
-            {
+                ratingValue: ratedParty.rating?.value,
+            }, {
                 where: {
-                    transactionPartyId: ratedParty.transactionId
+                    transactionPartyId: ratedParty.transactionId,
                 }
             }
         );
@@ -259,9 +243,19 @@ class TransactionsService {
             });
     }
 
+    public async requestTransactionSettlement(transactionId: number) {
+        await TransactionAdapter.update(
+            {
+                status: TransactionStatus.AWAITING_SETTLEMENT_APPROVAL,
+            },
+            {
+                where: {
+                    transactionId: transactionId
+                }
+            });
+    }
+
     public async setUserPendingTransactionsToActive(userEmail: string, userId: number) {
-        console.log(userEmail);
-        console.log(userId);
         const userTransactionParties = await this.getUserPendingTransactionParties(userEmail);
         const pendingTransactions = await PendingTransactionAdapter.findAll({
             where: {
@@ -292,7 +286,6 @@ class TransactionsService {
 
             const exchangedGood = transaction.get('exchangedGood') as PendingExchangedGoodAdapter;
             exchangedGood.transactionId = transactionData.transactionId;
-            console.log(exchangedGood)
             await ExchangedGoodAdapter.create(
                 {
                     amount: exchangedGood.amount,
@@ -307,7 +300,6 @@ class TransactionsService {
             );
             await exchangedGood.destroy();
             const parties = transaction.get('pendingTransactionParties') as PendingTransactionPartyAdapter[];
-
             for (const party of parties) {
                 await TransactionPartyAdapter.create(
                     {
@@ -326,7 +318,7 @@ class TransactionsService {
         await TransactionAdapter.update(
             {
                 actualSettlementDate: settlementDate,
-                status: TransactionStatus.AWAITING_SETTLEMENT_APPROVAL,
+                status: TransactionStatus.SETTLED,
                 settlementProof: receipt
             },
             {
@@ -346,6 +338,20 @@ class TransactionsService {
                     transactionId: transactionId
                 }
             });
+    }
+
+    public async validateTransactionChange(isAccepted: Boolean, transactionId: number) {
+        const transaction = await this.getTransactionById(transactionId) as TransactionAdapter;
+        if (!isAccepted) await transaction.update(
+            {
+                targetedSettlementDate: transaction.previousTargetedSettlementDate,
+                status: TransactionStatus.PENDING
+            });
+        else await transaction.update(
+            {
+                status: TransactionStatus.CHANGED
+            });
+        return transaction;
     }
 
     private doesContainPendingUser(transaction: Transaction): boolean {

@@ -570,6 +570,52 @@
         ]
       }
     },
+    "/api/transactions/validate-transaction-change/{transactionId}": {
+      "patch": {
+        "operationId": "TransactionsController.validateTransactionChange",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transactionId",
+            "required": true,
+            "schema": {
+              "pattern": "[^\\/#\\?]+?",
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "isAccepted": {
+                    "type": "boolean"
+                  },
+                  "userId": {
+                    "type": "number"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": "Successful response"
+          }
+        },
+        "summary": "Validate transaction change",
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
     "/api/users/change-password": {
       "post": {
         "operationId": "UsersController.changePassword",

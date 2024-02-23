@@ -4,6 +4,7 @@ interface ITransaction {
     actualSettlementDate?: Date;
     approvalDate?: Date;
     initiationDate?: Date;
+    previousTargetedSettlementDate?: Date;
     settlementProof: string;
     status: TransactionStatus;
     targetedSettlementDate?: Date;

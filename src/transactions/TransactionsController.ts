@@ -1,5 +1,4 @@
 import {Response} from "express";
-import multer from "multer";
 import {Body, BodyParam, Get, JsonController, Param, Patch, Post, Put, Res, UploadedFile} from 'routing-controllers';
 import {upload} from "../config/multerConfig";
 import ContactsService from "../contacts/ContactsService";
@@ -15,7 +14,6 @@ import ExchangedGoodAdapter from "./models/exchangedGood/ExchangedGoodAdapter";
 import {ExchangedGoodType} from "./models/exchangedGood/IExchangedGood";
 import Loan from "./models/Loan";
 import OtherTransaction from "./models/OtherTransaction";
-import pendingTransactionAdapter from "./models/PendingTransactionAdapter";
 import PendingTransactionAdapter from "./models/PendingTransactionAdapter";
 import Transaction, {TransactionPartyRoles, TransactionStatus, TransactionType} from "./models/Transaction"
 import TransactionAdapter from "./models/TransactionAdapter";
@@ -43,48 +41,21 @@ class TransactionsController extends BaseController {
     public async approveTransaction(@BodyParam("approvalDate") approvalDate: Date, @BodyParam("userId") userId: number, @Param('transactionId') transactionId: number) {
         // Add logic to check if user has right to do this
         await this.service.approveTransaction(approvalDate, transactionId);
-        const transaction: Transaction = await this.getTransactionById(transactionId);
-        // const approverNameInReceiverContact = await this.contactsService.getContactDescription(transaction.initiator.id, userId);
-        // this.sendTransactionNotification(
-        //     transaction.id as number,
-        //     userId,
-        //     `${approverNameInReceiverContact} approved your transaction request`,
-        //     NOTIFICATION_TYPE.INITIATION_REQUEST
-        // );
-        // switch (transaction.type){
-        //     case "cash":
-        // }
-        //
-        // const approver: User = userId == transaction.lender.id ? transaction.lender : transaction.borrower;
-        // const initiator: User = userId == transaction.lender.id ? transaction.borrower : transaction.lender;
-        // const approvalReceiptParams: ApprovalReceiptParams = {
-        //     description: transaction.exchangedGood.description,
-        //     email: approver.email,
-        //     nickname: approver.nickname,
-        //     friendName: initiator.nickname,
-        //     transactionId: transactionId,
-        //     transactionType: transaction.type,
-        //
-        // };
+        const transaction: Transaction = await this.getTransactionById(transactionId, userId);
+        const approver: TransactionParty = transaction.parties.filter(trxP => !(trxP.role.includes(TransactionPartyRoles.INITIATOR) || trxP.role.includes(TransactionPartyRoles.SENDER)))[0];
+        const initiator: TransactionParty = transaction.parties.filter(trxP => (trxP.role.includes(TransactionPartyRoles.INITIATOR) || trxP.role.includes(TransactionPartyRoles.RECEIVER)))[0];
+        await this.sendApprovalReceipts(approver, initiator, transaction);
         return transaction;
     }
+
     @Put("/approve-witness-transaction/:transactionId")
     public async approveWitnessTransaction(@BodyParam("approvalDate") approvalDate: Date, @BodyParam("userId") userId: number, @Param('transactionId') transactionId: number) {
         // Add logic to check if user has right to do this
-        console.log("userId: ",userId,"  transaction Id:",transactionId)
-        await this.service.approveWitnessTransaction(approvalDate, userId,transactionId);
+        console.log("userId: ", userId, "  transaction Id:", transactionId)
+        await this.service.approveWitnessTransaction(approvalDate, userId, transactionId);
         const transaction: Transaction = await this.getTransactionById(transactionId);
         return transaction;
     }
-    // @Get("/borrower/:transactionId")
-    // public async getTransactionBorrower(@Param('transactionId') transactionId: number) {
-    //     const transaction = await this.service.getTransactionBorrower(transactionId);
-    //     let borrower: Borrower;
-    //     if (transaction && transaction.get('Borrower')) {
-    //         borrower = new Borrower(transaction.get('Borrower') as IUser, transaction.Transaction_Rating_Borrower, transaction.Transaction_Rating_Borrower_Message)
-    //         return borrower;
-    //     } else return null;
-    // }
 
     @Patch("/change-transaction/:userId")
     public async changeTransaction(@Body() transaction: any, @Param('userId') userId: number) {
@@ -97,13 +68,6 @@ class TransactionsController extends BaseController {
         // Add logic to check if user has right to do this
         await this.service.updateTransactionStatus(transactionId, TransactionStatus.SETTLED);
         const transaction: Transaction = await this.getTransactionById(transactionId, userId);
-        // const settlerNameInContact = await this.contactsService.getContactDescription(transaction.lender.id, userId);
-        // this.sendTransactionNotification(
-        //     transactionId,
-        //     transaction.initiator.id,
-        //     `${settlerNameInContact} settled your transaction`,
-        //     NOTIFICATION_TYPE.TRANSACTION_REFUSED
-        // );
         return transaction;
     }
 
@@ -139,14 +103,6 @@ class TransactionsController extends BaseController {
         } else {
             newTransaction = await this.getPendingTransactionById(newTransactionData);
         }
-        // const receiver = this.getTransactionRequestReceiver(newTransaction);
-        // const initiatorNameInContact = await this.contactsService.getContactDescription(receiver.id, transaction.initiator.id);
-        // this.sendTransactionNotification(
-        //     newTransaction.id as number,
-        //     newTransaction.initiator.id,
-        //     `${initiatorNameInContact} sent you transaction request`,
-        //     NOTIFICATION_TYPE.INITIATION_REQUEST
-        // );
         return newTransaction;
     }
 
@@ -161,13 +117,6 @@ class TransactionsController extends BaseController {
         // Add logic to check if user has right to do this
         await this.service.refuseTransaction(transactionId);
         const transaction: Transaction = await this.getTransactionById(transactionId, userId);
-        // const refuserNameInContact = await this.contactsService.getContactDescription(transaction.initiator.id, userId);
-        // this.sendTransactionNotification(
-        //     transactionId,
-        //     transaction.initiator.id,
-        //     `${refuserNameInContact} refused your transaction request`,
-        //     NOTIFICATION_TYPE.TRANSACTION_REFUSED
-        // );
         return transaction;
     }
 
@@ -176,34 +125,14 @@ class TransactionsController extends BaseController {
         // Add logic to check if user has right to do this
         await this.service.updateTransactionStatus(transactionId, TransactionStatus.PROCESSING);
         const transaction: Transaction = await this.getTransactionById(transactionId, userId);
-        // const settlerNameInContact = await this.contactsService.getContactDescription(transaction.lender.id, userId);
-        // this.sendTransactionNotification(
-        //     transactionId,
-        //     transaction.initiator.id,
-        //     `${settlerNameInContact} settled your transaction`,
-        //     NOTIFICATION_TYPE.TRANSACTION_REFUSED
-        // );
         return transaction;
     }
 
     @Get("/request-settlement/:transactionId/:userId")
     public async requestSettlement(@Param('transactionId') transactionId: number, @Param('userId') userId: number, @Res() response: Response) {
         try {
-            const transaction = await this.getTransactionById(transactionId, userId);
-            let transactionParty: string;
-            switch (transaction.type) {
-                case TransactionType.LOAN:
-                    const loan = transaction as Loan;
-                    transactionParty = await this.contactsService.getContactDescription(loan.borrower.user.id, loan.lender.user.id);
-                    this.emailsService.requestSettlement(transactionParty || loan.lender.user.email, loan, loan.borrower.user.email);
-                    break;
-                case TransactionType.OTHER:
-                    const otherTransaction = transaction as OtherTransaction;
-                    transactionParty = await this.contactsService.getContactDescription(otherTransaction.receiver.user.id, otherTransaction.sender.user.id);
-                    this.emailsService.requestSettlement(transactionParty || otherTransaction.sender.user.email, otherTransaction, otherTransaction.receiver.user.email);
-                    break;
-            }
-            return response.status(201).json({"status": 1, message: 'Settlement request sent successfully'});
+            await this.service.requestTransactionSettlement(transactionId);
+            return await this.getTransactionById(transactionId);
         } catch (error) {
             return response.status(400).json({"status": 0, error: error});
         }
@@ -211,16 +140,11 @@ class TransactionsController extends BaseController {
 
     @Put("/settle-transaction/:transactionId")
     public async settleTransaction(@BodyParam("settlementDate") settlementDate: Date, @BodyParam("userId") userId: number, @BodyParam("receipt") receipt: string, @Param('transactionId') transactionId: number) {
-        // Add logic to check if user has right to do this
         await this.service.settleTransaction(settlementDate, transactionId, receipt);
         const transaction: Transaction = await this.getTransactionById(transactionId, userId);
-        // const settlerNameInContact = await this.contactsService.getContactDescription(transaction.lender.id, userId);
-        // this.sendTransactionNotification(
-        //     transactionId,
-        //     transaction.initiator.id,
-        //     `${settlerNameInContact} settled your transaction`,
-        //     NOTIFICATION_TYPE.TRANSACTION_REFUSED
-        // );
+        const borrower: TransactionParty = transaction.parties.filter(trxP => trxP.role.includes(TransactionPartyRoles.BORROWER) || trxP.role.includes(TransactionPartyRoles.RECEIVER))[0];
+        const lender: TransactionParty = transaction.parties.filter(trxP => trxP.role.includes(TransactionPartyRoles.LENDER) || trxP.role.includes(TransactionPartyRoles.RECEIVER))[0];
+        await this.sendSettlementReceipts(borrower, lender, transaction);
         return transaction;
     }
 
@@ -229,11 +153,33 @@ class TransactionsController extends BaseController {
         return image.filename;
     }
 
+    @Patch("/validate-transaction-change/:transactionId")
+    public async validateTransactionChange(@BodyParam("isAccepted") isAccepted: Boolean, @BodyParam("userId") userId: number, @Param('transactionId') transactionId: number) {
+        await this.service.validateTransactionChange(isAccepted, transactionId);
+        return await this.getTransactionById(transactionId, userId);
+    }
+
+    private async sendSettlementReceipts(borrower: TransactionParty, lender: TransactionParty, transaction: Transaction) {
+        //To the settler | borrower
+        this.emailsService.sendSettlementEmail(borrower.user.nickname, lender.user.nickname, transaction, borrower.user.email);
+        //To the lender
+        const borrowerNameInLenderContact = await this.contactsService.getContactDescription(lender.user.id, borrower.user.id) || borrower.user.email;
+        const lenderNickname: string = (await this.usersService.getUser(lender.user.email)).User_Name;
+        this.emailsService.sendSettlementEmail(lenderNickname, borrowerNameInLenderContact, transaction, lender.user.email);
+    }
+
+    private async sendApprovalReceipts(approver: TransactionParty, initiator: TransactionParty, transaction: Transaction) {
+        //To the approver
+        this.emailsService.sendApprovalEmail(approver.user.nickname, initiator.user.nickname, transaction, approver.user.email);
+        //To the initiator
+        const approverNameInInitiatorContact = await this.contactsService.getContactDescription(initiator.user.id, approver.user.id) || approver.user.email;
+        const initiatorNickname: string = (await this.usersService.getUser(initiator.user.email)).User_Name;
+        this.emailsService.sendApprovalEmail(initiatorNickname, approverNameInInitiatorContact, transaction, initiator.user.email);
+    }
+
     private async getTransactionById(transactionId: number, userId?: number) {
         const transactionData = await this.service.getTransactionById(transactionId) as TransactionAdapter;
         const transactionParties = await this.service.getTransactionParties(transactionId);
-        // console.log("transactionData:",transactionData)
-        console.log("transactionParties*********************************:",transactionParties)
         const exchangedGood = await this.service.getTransactionExchangedGood(transactionId) as ExchangedGoodAdapter;
         return this.adaptTransaction(transactionData, transactionParties, exchangedGood, userId)
     }
@@ -327,8 +273,7 @@ class TransactionsController extends BaseController {
                 break;
         }
         const witness = transactionParties.filter(party => party.role.includes(TransactionPartyRoles.WITNESS));
-        console.log("witness:",witness);
-        witness.forEach((user) =>{
+        witness.forEach((user) => {
             transaction!.setWitness(user)
         })
         transaction.exchangedGood = exchangedGood;
@@ -336,9 +281,7 @@ class TransactionsController extends BaseController {
     }
 
     private async adaptTransaction(transactionData: TransactionAdapter, transactionPartiesData: TransactionPartyAdapter[], exchangedGoodData: ExchangedGoodAdapter, userId?: number) {
-        console.log("transactionPartiesData here 1:",transactionPartiesData)
         const transactionParties = await this.adaptTransactionParties(transactionPartiesData);
-        console.log("transactionParties: here 2:",transactionParties)
         const exchangedGood = this.adaptExchangedGood(exchangedGoodData);
         return await this.getTransactionClassObject(transactionParties, exchangedGood, transactionData, userId);
     }

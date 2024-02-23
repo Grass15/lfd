@@ -11,6 +11,7 @@ class TransactionAdapter extends Model implements ITransaction {
     actualSettlementDate?: Date;
     approvalDate?: Date;
     initiationDate!: Date;
+    previousTargetedSettlementDate?: Date;
     settlementProof!: string;
     status!: TransactionStatus;
     targetedSettlementDate!: Date;
@@ -29,11 +30,14 @@ TransactionAdapter.init(
         initiationDate: {
             type: DataTypes.DATE,
         },
+        previousTargetedSettlementDate: {
+            type: DataTypes.DATE,
+        },
         settlementProof: {
             type: DataTypes.STRING,
         },
         status: {
-            type: DataTypes.ENUM("awaiting_settlement_approval", "changed", "pending", "processing", "settled", "refused"),
+            type: DataTypes.ENUM("awaiting_change_approval", "awaiting_settlement_approval", "changed", "pending", "processing", "settled", "refused"),
         },
         targetedSettlementDate: {
             type: DataTypes.DATE,
