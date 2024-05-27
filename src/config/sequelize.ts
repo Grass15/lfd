@@ -15,7 +15,7 @@ const sequelize: Sequelize = new Sequelize({
     port: port,
     username: username,
     password: dbPassword,
-    database: 'lendafriend',
+    database: 'railway',
 });
 
 
